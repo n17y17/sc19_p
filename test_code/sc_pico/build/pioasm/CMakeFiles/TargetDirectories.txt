@@ -1,0 +1,3 @@
+C:/Users/N17Y1/program/Akatoki/personal/sc19_p/code_test/sc_pico/build/pioasm/CMakeFiles/pioasm.dir
+C:/Users/N17Y1/program/Akatoki/personal/sc19_p/code_test/sc_pico/build/pioasm/CMakeFiles/edit_cache.dir
+C:/Users/N17Y1/program/Akatoki/personal/sc19_p/code_test/sc_pico/build/pioasm/CMakeFiles/rebuild_cache.dir
