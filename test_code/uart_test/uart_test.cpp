@@ -26,7 +26,7 @@ int main()
                 write_bits[i] = ((count >> (8*i)) & 0xffu);
             }
             uart_0.write(sc::Binary(8, write_bits));
-            sc::Log::write("write0 : %lld\n", count);
+            sc::Log::write("write0 : %llu\n", count);
             // std::cout << count << std::endl;
             sleep_ms(100);
             sc::Binary read_bits(uart_1.read(8));
@@ -36,7 +36,7 @@ int main()
                 read_data <<= 8;
                 read_data += read_bits[i];
             }
-            sc::Log::write("size1 : %d\n", read_bits.size());
+            sc::Log::write("read1 : %llu\n", read_data);
             // std::cout << read_data << std::endl;
             sleep_ms(100);
         }

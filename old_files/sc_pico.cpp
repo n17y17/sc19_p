@@ -1,32 +1,4 @@
-/*************************************
- *************************************
-
-
-このファイルは見なくてかまいません
-内部の実装を知りたい場合のみ見てください
-
-
-*************************************
-*************************************/
-
 #include "sc_pico.hpp"
-
-//! @file sc_pico.cpp
-//! @brief picoに関するプログラム
-//! @date 2023-10-28T00:37
-
-
-//! @brief ログを記録する関数です．
-//! @param log 書き込む文字列
-void sc::Log::write(const std::string& log) noexcept
-{
-    try
-    {
-        std::cout << log << std::flush;
-    }
-    catch(const std::exception& e) {Error(__FILE__, __LINE__, "Failed to save log", e);}  // ログの保存に失敗しました
-    catch(...) {Error(__FILE__, __LINE__, "Failed to save log");}  // ログの保存に失敗しました
-}
 
 namespace pico
 {
@@ -76,7 +48,7 @@ namespace pico
         {
             case Pull::no_use:
             {
-                gpio_disable_pulls(_pin_gpio);  // pico-SDKの関数  プルアップ・プルダウンを無効化
+                goio_disable_pulls(_pin_gpio);  // pico-SDKの関数  プルアップ・プルダウンを無効化
                 break;
             }
             case Pull::up:
@@ -189,11 +161,10 @@ namespace pico
     //! @param slave_addr 通信先のデバイスのスレーブアドレス
     //! @param memory_addr 通信先のデバイス内のメモリアドレス
     //! @return Binary型のバイト列
-    sc::Binary I2C::read_mem(std::size_t size, SlaveAddr slave_addr, MemoryAddr memory_addr) const
+    sc::Binary I2C::read_mem(std::size_t size, SlaveAddr slave_addr, sc::Serial::MemoryAddr memory_addr) const
     {
         std::vector<uint8_t> input_data(size);
-        const uint8_t memory_addr_num = memory_addr.get();
-        i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr.get(), &memory_addr_num, 1, true);
+        i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr.get(), &memory_addr, 1, true);
         i2c_read_blocking((_i2c_id ? i2c1 : i2c0), slave_addr.get(), input_data.data(), size, false);
         return sc::Binary(input_data);
     }
@@ -210,10 +181,9 @@ namespace pico
     //! @param output_data 送信するデータ
     //! @param slave_addr 通信先のデバイスのスレーブアドレス
     //! @param memory_addr 通信先のデバイス内のメモリアドレス
-    void I2C::write_mem(sc::Binary output_data, SlaveAddr slave_addr, MemoryAddr memory_addr) const
+    void I2C::write_mem(sc::Binary output_data, SlaveAddr slave_addr, sc::Serial::MemoryAddr memory_addr) const
     {
-        const uint8_t memory_addr_num = memory_addr.get();
-        i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr.get(), &memory_addr_num, 1, true);
+        i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr.get(), &memory_addr, 1, true);
         i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr.get(), output_data.get_raw().data(), output_data.size(), false);
     }
 
@@ -231,20 +201,20 @@ namespace pico
         _sck_gpio(sck_gpio),
         _cs_gpios(cs_gpios)
     {
-        const std::set<uint8_t> PossibleMISO_0 = {0, 4, 16};  // SPI0のMISOのピン番号が取りうる値
-        const std::set<uint8_t> PossibleMOSI_0 = {3, 7, 19};  // SPI0のMOSIのピン番号が取りうる値
-        const std::set<uint8_t> PossibleSCK_0 = {2, 6, 18};  // SPI0のSCKピン番号が取りうる値
-        const std::set<uint8_t> PossibleMISO_1 = {8, 12};  // SPI1のMISOのピン番号が取りうる値
-        const std::set<uint8_t> PossibleMOSI_1 = {11, 15};  // SPI1のMOSIのピン番号が取りうる値
-        const std::set<uint8_t> PossibleSCK_1 = {10, 14};  // SPI1のSCKピン番号が取りうる値
+        constexpr uint8_t PossibleMISO_0[] = {0, 4, 16};  // SPI0のMISOのピン番号が取りうる値
+        constexpr uint8_t PossibleMOSI_0 = {3, 7, 19};  // SPI0のMOSIのピン番号が取りうる値
+        constexpr uint8_t PossibleSCK_0 = {2, 6, 18};  // SPI0のSCKピン番号が取りうる値
+        constexpr uint8_t PossibleMISO_1 = {8, 12};  // SPI1のMISOのピン番号が取りうる値
+        constexpr uint8_t PossibleMOSI_1 = {11, 15};  // SPI1のMOSIのピン番号が取りうる値
+        constexpr uint8_t PossibleSCK_1 = {10, 14};  // SPI1のSCKピン番号が取りうる値
         constexpr uint8_t MaxCsGpio = 28;  // CSピンのGPIO番号の最大値
 
         // Raspberry Pi PicoでSPI用として使用できないピンの場合はエラー        
         if (std::all_of(_cs_gpios.begin(), _cs_gpios.end(), [](uint8_t cs_gpio){return cs_gpio <= MaxCsGpio;}))
         {
-            if (PossibleMISO_0.count(_miso_gpio) && PossibleMOSI_0.count(_mosi_gpio) && PossibleSCK_0.count(_sck_gpio))
+            if (std::count(&PossibleMISO_0, &PossibleMISO_0+2, miso_gpio) && std::count(&PossibleMOSI_0, &PossibleMOSI_0+2, mosi_gpio) && std::count(&PossibleSCK_0, &PossibleSCK_0+2, sck_gpio))
     return;
-            if (PossibleMISO_1.count(_miso_gpio) && PossibleMOSI_1.count(_mosi_gpio) && PossibleSCK_1.count(_sck_gpio))
+            if (std::count(&PossibleMISO_1, &PossibleMISO_1+2, miso_gpio) && std::count(&PossibleMOSI_1, &PossibleMOSI_1+2, mosi_gpio) && std::count(&PossibleSCK_1, &PossibleSCK_1+2, sck_gpio))
     return;
         }
 
@@ -312,78 +282,75 @@ namespace pico
     }
 
     //! @brief 通信先につながるCSピンの出力レベルを0にして通信相手を選択
-    //! @param cs_gpio 選択したいCSピン
-    void SPI::select_cs(CS_Pin cs_gpio) const
+    //! @param cs_gpio 選択したいCSピンのGPIO番号
+    void SPI::select_cs_pin(uint8_t cs_gpio) const
     {
-        gpio_put(cs_gpio.get(), 0);
+        gpio_put(cs_gpio, 0);
     }
 
     //! @brief 通信先につながるCSピンの出力レベルを1にして通信相手の選択を解除
-    //! @param cs_gpio 選択を解除したいCSピン
-    void SPI::deselect_cs(CS_Pin cs_gpio) const
+    //! @param cs_gpio 選択を解除したいCSピンのGPIO番号
+    void SPI::deselect_cs_pin(uint8_t cs_gpio) const
     {
-        gpio_put(cs_gpio.get(), 1);
+        gpio_put(cs_gpio, 1);
     }
 
     //! @brief SPIによる受信
     //! @param size 受信するバイト数
-    //! @param cs_pin 通信先につながるCSピン
+    //! @param cs_gpio 通信先につながるCSピンのGPIO番号
     //! @return Binary型のバイト列
-    sc::Binary SPI::read(std::size_t size, CS_Pin cs_pin) const
+    sc::Binary SPI::read(std::size_t size, CS_Pin cs_gpio) const
     {
         std::vector<uint8_t> input_data(size);
-        SPI::select_cs(cs_pin);
-        spi_read_blocking((_spi_id ? spi1 : spi0), 0U, input_data.data(), size);
-        SPI::deselect_cs(cs_pin);
+        cs_select(cs_gpio);
+        spi_read_blocking((_spi_id ? spi1 : spi0), cs_gpio.get(), input_data.data(), size, false);
+        cs_deselect(cs_gpio);
         return sc::Binary(input_data);
     }
 
     //! @brief SPIによるメモリからの受信
     //! @param size 受信するバイト数
-    //! @param cs_pin 通信先につながるCSピン
+    //! @param cs_gpio 通信先につながるCSピンのGPIO番号
     //! @param memory_addr 通信先のデバイス内のメモリアドレス
     //! @return Binary型のバイト列
     //! メモリアドレスの8ビット目は自動的に1になります．
-    sc::Binary SPI::read_mem(std::size_t size, CS_Pin cs_pin, MemoryAddr memory_addr) const
+    sc::Binary SPI::read_mem(std::size_t size, CS_Pin cs_gpio, sc::Serial::MemoryAddr memory_addr) const
     {
         std::vector<uint8_t> input_data(size);
-        const uint8_t memory_addr_num = memory_addr.get_1();
-        SPI::select_cs(cs_pin);
-        spi_write_blocking((_spi_id ? spi1 : spi0), &memory_addr_num, 1);
-        spi_read_blocking((_spi_id ? spi1 : spi0), 0U, input_data.data(), size);
-        SPI::deselect_cs(cs_pin);
+        const uint8_t read_memory_addr = memory_addr.get() | 0b10000000U;  // 8ビット目を1にする
+        cs_select(cs_gpio);
+        spi_write_blocking((_spi_id ? spi1 : spi0), cs_gpio.get(), &read_memory_addr, 1, true);
+        spi_read_blocking((_spi_id ? spi1 : spi0), cs_gpio.get(), input_data.data(), size, false);
+        cs_deselect(cs_gpio);
         return sc::Binary(input_data);
     }
 
     //! @brief SPIによる送信
     //! @param output_data 送信するデータ
-    //! @param cs_pin 通信先につながるCSピン
-    void SPI::write(sc::Binary output_data, CS_Pin cs_pin) const
+    //! @param cs_gpio 通信先につながるCSピンのGPIO番号
+    void SPI::write(sc::Binary output_data, CS_Pin cs_gpio) const
     {
-        SPI::select_cs(cs_pin);
-        spi_write_blocking((_spi_id ? spi1 : spi0), output_data.get_raw().data(), output_data.size());
-        SPI::deselect_cs(cs_pin);
+        cs_select(cs_gpio);
+        spi_write_blocking((_spi_id ? spi1 : spi0), cs_gpio.get(), output_data.get_raw().data(), output_data.size(), false);
+        cs_deselect(cs_gpio);
     }
 
     //! @brief SPIによるメモリからの送信
     //! @param output_data 送信するデータ
-    //! @param cs_pin 通通信先につながるCSピン
+    //! @param cs_gpio 通通信先につながるCSピンのGPIO番号
     //! @param memory_addr 通信先のデバイス内のメモリアドレス
     //! メモリアドレスの8ビット目は自動的に0になります
-    void SPI::write_mem(sc::Binary output_data, CS_Pin cs_pin, MemoryAddr memory_addr) const
+    void SPI::write_mem(sc::Binary output_data, CS_Pin cs_gpio, sc::Serial::MemoryAddr memory_addr) const
     {
-        const uint8_t memory_addr_num = memory_addr.get_0();
-        SPI::select_cs(cs_pin);
-        spi_write_blocking((_spi_id ? spi1 : spi0), &memory_addr_num, 1);
-        spi_write_blocking((_spi_id ? spi1 : spi0), output_data.get_raw().data(), output_data.size());
-        SPI::deselect_cs(cs_pin);
+        const uint8_t write_memory_addr = memory_addr.get() & 0b01111111U;  // 8ビット目を0にする
+        cs_select(cs_gpio);
+        spi_write_blocking((_spi_id ? spi1 : spi0), cs_gpio.get(), &write_memory_addr, 1, true);
+        spi_write_blocking((_spi_id ? spi1 : spi0), cs_gpio.get(), output_data.get_raw().data(), output_data.size(), false);
+        cs_deselect(cs_gpio);
     }
 
 
     /***** class UART *****/
-
-    std::deque<uint8_t> UART::uart0_input_data;
-    std::deque<uint8_t> UART::uart1_input_data;
 
     //! @brief UART通信で使うピン番号をセットアップ
     //! @param tx_gpio TXピンのGPIO番号
@@ -432,7 +399,6 @@ namespace pico
     {
         init_uart();
         set_uart_pin();
-        set_irq();
     }
 
     //! @brief UART通信を初期化する
@@ -457,7 +423,7 @@ namespace pico
             uart_set_fifo_enabled(uart1, false);  // FIFO(受信したデータを一時的に保管する機能)をオフにし，1文字ずつ受信する
             irq_set_exclusive_handler(UART1_IRQ, uart1_handler);  // 割り込み処理で実行する関数をセット
             irq_set_enabled(UART1_IRQ, true);  // 割り込み処理を有効にする
-        } else {
+        } elae {
             uart_set_hw_flow(uart0, false, false);  // フロー制御(受信準備が終わるまで送信しないで待つ機能)を無効にする
             uart_set_format(uart0, 8, 1, UART_PARITY_NONE);  // UART通信の設定をする
             uart_set_fifo_enabled(uart0, false);  // FIFO(受信したデータを一時的に保管する機能)をオフにし，1文字ずつ受信する
@@ -497,61 +463,20 @@ namespace pico
     }
 
     //! @brief UARTによる受信
-    //! @return Binary型のバイト列．
-    //! 割り込み処理で受信していたデータを全てまとめて返す．受信したデータは削除される．
-    sc::Binary UART::read() const
-    {
-        if (_uart_id)
-        {
-            std::deque<uint8_t> input_data(uart0_input_data);
-            uart0_input_data.clear();
-            return sc::Binary(input_data);
-        } else {
-            std::deque<uint8_t> input_data(uart1_input_data);
-            uart1_input_data.clear();
-            return sc::Binary(input_data);
-        }
-    }
-
-    //! @brief UARTによる受信
     //! @param size 受信するバイト数
+    //! @param no_use 不要．互換性維持のためにある
     //! @return Binary型のバイト列
-    //! 割り込み処理で受信していたデータを直近の size バイト分返す
-    sc::Binary UART::read(std::size_t size) const
+    sc::Binary UART::read(std::size_t size, NoUse no_use) const
     {
-        std::deque<uint8_t> input_data;
-        if (_uart_id)
-        {
-            if (size < uart0_input_data.size())
-            {
-                for (unsigned int i = 0; i < size; ++i)
-                {
-                    input_data.push_back(uart0_input_data.front());
-                    uart0_input_data.pop_front();
-                }
-    return input_data;
-            } else {
-    return this->read();
-            }
-        } else {
-            if (size < uart1_input_data.size())
-            {
-                for (unsigned int i = 0; i < size; ++i)
-                {
-                    input_data.push_back(uart1_input_data.front());
-                    uart1_input_data.pop_front();
-                }
-    return input_data;
-            } else {
-    return this->read();
-            }
-        }
+        std::deque<uint8_t> input_data(uart0_input_data);
+        uart0_input_data.empty();
+        return sc::Binary(input_data);
     }
 
     //! @brief UARTによる送信
     //! @param output_data 送信するデータ
     //! @param no_use 不要．互換性維持のためにある
-    void UART::write(sc::Binary output_data) const
+    void UART::write(sc::Binary output_data, NoUse no_use) const
     {
         uart_write_blocking((_uart_id ? uart1 : uart0), output_data.get_raw().data(), output_data.size());
     }
