@@ -24,7 +24,7 @@
 
 //! @file sc.hpp
 //! @brief プログラム全体で共通の，基本的な機能
-//! @date 2023-10-27T23:08
+//! @date 2023-10-29T15:29
 
 //! @brief SCのプロジェクト全体に関わるコード
 namespace sc
@@ -104,7 +104,7 @@ namespace sc
     public:
         //! @brief バイト列を作成
         //! @param binary_data { }で囲んだデータ
-        Binary(const std::initializer_list<uint8_t>& binary_data):
+        explicit Binary(const std::initializer_list<uint8_t>& binary_data):
             _binary_data(binary_data) {}
 
         //! @brief バイト列を作成
@@ -116,15 +116,17 @@ namespace sc
         //! @brief バイト列を作成
         //! @param binary_data 配列
         template<std::size_t Size>
-        Binary(const uint8_t (&binary_data)[Size]):
+        explicit Binary(const uint8_t (&binary_data)[Size]):
             Binary(Size, binary_data) {}
 
         //! @brief バイト列を作成
         //! @param binary_data vectorの配列
-        Binary(std::vector<uint8_t> binary_data):
+        explicit Binary(std::vector<uint8_t> binary_data):
             _binary_data(binary_data) {}
 
-        Binary(std::deque<uint8_t> binary_data):
+        //! @brief バイト列を作成
+        //! @param binary_data deque型の値
+        explicit Binary(std::deque<uint8_t> binary_data):
             _binary_data(binary_data.begin(), binary_data.end()) {}
 
         std::size_t size() const;
@@ -315,6 +317,11 @@ namespace sc
         //! @param slave_addr 通信先のデバイスのスレーブアドレス
         //! @param memory_addr 通信先のデバイス内のメモリアドレス
         virtual void write_mem(Binary output_data, SlaveAddr slave_addr, MemoryAddr memory_addr) const = 0;
+    };
+
+    class I2C_Slave : Noncopyable
+    {
+        
     };
 
     //! @brief SPI通信の親クラス

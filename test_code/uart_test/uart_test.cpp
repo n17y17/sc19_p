@@ -6,8 +6,8 @@
 int main()
 {
     stdio_init_all();
-    pico::UART uart_0(pico::UART::Pin(0, 1), 2400);
-    pico::UART uart_1(pico::UART::Pin(4, 5), 2400);
+    pico::UART uart_0(pico::UART::Pin(0, 1), 115200);
+    pico::UART uart_1(pico::UART::Pin(4, 5), 115200);
 
     uint64_t count = 0;
     sc::Log::write("start");
@@ -28,17 +28,17 @@ int main()
             uart_0.write(sc::Binary(8, write_bits));
             sc::Log::write("write0 : %llu\n", count);
             // std::cout << count << std::endl;
-            sleep_ms(100);
+            // sleep_ms(100);
             sc::Binary read_bits(uart_1.read(8));
             uint64_t read_data = 0;
             for (uint i = 0; i < read_bits.size(); ++i)
             {
-                read_data <<= 8;
-                read_data += read_bits[i];
+                read_data += (read_bits[i] << 8*i);
+                // sc::Log::write("read_c : %u\n", read_bits[i]);
             }
             sc::Log::write("read1 : %llu\n", read_data);
             // std::cout << read_data << std::endl;
-            sleep_ms(100);
+            // sleep_ms(100);
         }
         catch(const std::exception& e)
         {

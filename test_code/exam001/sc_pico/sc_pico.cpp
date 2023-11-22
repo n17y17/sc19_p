@@ -13,7 +13,7 @@
 
 //! @file sc_pico.cpp
 //! @brief picoに関するプログラム
-//! @date 2023-10-28T01:22
+//! @date 2023-10-28T15:47
 
 
 //! @brief ログを記録する関数です．
@@ -275,7 +275,7 @@ namespace pico
         return _cs_gpios;
     }
 
-    //! @brief SPI通信を初期化する
+    //! @brief SPI0かSPI1かを取得
     bool SPI::Pin::get_spi_id() const
     {
         return static_cast<bool>(_miso_gpio == 8 || _miso_gpio == 12);
@@ -292,6 +292,7 @@ namespace pico
         set_spi_pin();
     }
 
+    //! SPI通信を初期化する
     void SPI::init_spi()
     {
         spi_init((_spi_id ? spi1 : spi0), _freq);  // pico-SDKの関数  SPIを初期化する
@@ -448,6 +449,7 @@ namespace pico
         gpio_set_function(_uart_pin.get_rx_gpio(), GPIO_FUNC_UART);  // pico-SDKの関数  ピンの機能をUARTモードにする
     }
 
+    //! 割り込み処理を設定する
     void UART::set_irq()
     {
         if (_uart_id)
@@ -457,12 +459,14 @@ namespace pico
             uart_set_fifo_enabled(uart1, false);  // FIFO(受信したデータを一時的に保管する機能)をオフにし，1文字ずつ受信する
             irq_set_exclusive_handler(UART1_IRQ, uart1_handler);  // 割り込み処理で実行する関数をセット
             irq_set_enabled(UART1_IRQ, true);  // 割り込み処理を有効にする
+            uart_set_irq_enables(uart1, true, false);  // 割り込み処理を受信のみで使用する
         } else {
             uart_set_hw_flow(uart0, false, false);  // フロー制御(受信準備が終わるまで送信しないで待つ機能)を無効にする
             uart_set_format(uart0, 8, 1, UART_PARITY_NONE);  // UART通信の設定をする
             uart_set_fifo_enabled(uart0, false);  // FIFO(受信したデータを一時的に保管する機能)をオフにし，1文字ずつ受信する
             irq_set_exclusive_handler(UART0_IRQ, uart0_handler);  // 割り込み処理で実行する関数をセット
             irq_set_enabled(UART0_IRQ, true);  // 割り込み処理を有効にする
+            uart_set_irq_enables(uart0, true, false);  // 割り込み処理を受信のみで使用する
         }
     }
 
@@ -473,11 +477,10 @@ namespace pico
         while (uart_is_readable(uart0))
         {
             uart0_input_data.push_back(uart_getc(uart0));
-            uart0_input_data.pop_front();
         }
-        if (uart0_input_data.size() != Uart0MaxLen)
+        if (Uart0MaxLen < uart0_input_data.size())
         {
-            uart0_input_data.resize(Uart0MaxLen, 0U);
+            uart0_input_data.pop_front();
         }
     }
 
@@ -488,11 +491,10 @@ namespace pico
         while (uart_is_readable(uart1))
         {
             uart1_input_data.push_back(uart_getc(uart1));
-            uart1_input_data.pop_front();
         }
-        if (uart1_input_data.size() != Uart1MaxLen)
+        if (Uart1MaxLen < uart1_input_data.size())
         {
-            uart1_input_data.resize(Uart1MaxLen, 0U);
+            uart1_input_data.pop_front();
         }
     }
 
@@ -522,18 +524,6 @@ namespace pico
         std::deque<uint8_t> input_data;
         if (_uart_id)
         {
-            if (size < uart0_input_data.size())
-            {
-                for (unsigned int i = 0; i < size; ++i)
-                {
-                    input_data.push_back(uart0_input_data.front());
-                    uart0_input_data.pop_front();
-                }
-    return input_data;
-            } else {
-    return this->read();
-            }
-        } else {
             if (size < uart1_input_data.size())
             {
                 for (unsigned int i = 0; i < size; ++i)
@@ -541,7 +531,19 @@ namespace pico
                     input_data.push_back(uart1_input_data.front());
                     uart1_input_data.pop_front();
                 }
-    return input_data;
+    return sc::Binary(input_data);
+            } else {
+    return this->read();
+            }
+        } else {
+            if (size < uart0_input_data.size())
+            {
+                for (unsigned int i = 0; i < size; ++i)
+                {
+                    input_data.push_back(uart0_input_data.front());
+                    uart0_input_data.pop_front();
+                }
+    return sc::Binary(input_data);
             } else {
     return this->read();
             }
