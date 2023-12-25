@@ -46,7 +46,7 @@ target_link_libraries(SC
 
 # # プログラミング言語を設定
 # set(CMAKE_C_STANDARD 11)
-# set(CMAKE_CXX_STANDARD 18)
+# set(CMAKE_CXX_STANDARD 17)
 
 # # 例外を有効にする
 # set(PICO_CXX_ENABLE_EXCEPTIONS 1)
