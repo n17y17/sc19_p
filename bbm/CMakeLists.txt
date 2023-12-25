@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.12)
 
 # プログラミング言語を設定
 set(CMAKE_C_STANDARD 11)
-set(CMAKE_CXX_STANDARD 18)
+set(CMAKE_CXX_STANDARD 17)
 
 # Pico-SDKのパスを設定 (環境によって違う)
 # set(PICO_SDK_PATH "C:/Pico/pico-sdk")
