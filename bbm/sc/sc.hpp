@@ -48,33 +48,29 @@ public:
 };
 
 
-//! @brief ログを記録
-class Log
-{
-public:
-    //! @brief ログを記録する関数です．
-    //! @param log 書き込む文字列
-    //! 出力時にSDカードにも記録する場合などは，この関数に追記してください
-    static void write(const std::string& log) noexcept;
+//! @brief メッセージを出力する関数です．
+//! @param message 出力する文字列
+//! 出力時にSDカードにも記録する場合などは，この関数に追記してください
+static void print(const std::string& message) noexcept;
 
-    //! @brief printfの形式でログを記録
-    //! @param format フォーマット文字列
-    //! @param args フォーマット文字列に埋め込む値
-    template<typename... Args>
-    static void write(const std::string& format, Args... args) noexcept
+//! @brief printfの形式で出力
+//! @param format フォーマット文字列
+//! @param args フォーマット文字列に埋め込む値
+template<typename... Args>
+static void print(const std::string& format, Args... args) noexcept
+{
+    try
     {
-        try
-        {
-            const size_t formatted_chars_num = std::snprintf(nullptr, 0, format.c_str(), args...);  // フォーマット後の文字数を計算
-            char formatted_chars[formatted_chars_num + 1];  // フォーマット済みの文字列を保存するための配列を作成
-            std::snprintf(&formatted_chars[0], formatted_chars_num + 1, format.c_str(), args...);  // フォーマットを実行
-            Log::write(formatted_chars);  // ログを記録
-        }
-        catch(const std::exception& e) {Error(__FILE__, __LINE__, "Failed to save log", e);}  // ログの保存に失敗しました
+        const size_t formatted_chars_num = std::snprintf(nullptr, 0, format.c_str(), args...);  // フォーマット後の文字数を計算
+        char formatted_chars[formatted_chars_num + 1];  // フォーマット済みの文字列を保存するための配列を作成
+        std::snprintf(&formatted_chars[0], formatted_chars_num + 1, format.c_str(), args...);  // フォーマットを実行
+        Log::write(formatted_chars);  // メッセージを出力
     }
-    // この関数は以下の資料を参考にて作成しました
-    // https://pyopyopyo.hatenablog.com/entry/2019/02/08/102456
-};
+    catch(const std::exception& e) {Error(__FILE__, __LINE__, "Failed to save log", e);}  // ログの保存に失敗しました
+    catch(...) {Error(__FILE__, __LINE__, "Failed to save log");}  // ログの保存に失敗しました
+}
+// この関数は以下の資料を参考にて作成しました
+// https://pyopyopyo.hatenablog.com/entry/2019/02/08/102456
 
 
 //! @brief ミリ秒間 待機
