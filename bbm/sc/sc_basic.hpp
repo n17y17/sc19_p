@@ -88,6 +88,30 @@ inline void sleep_us(uint32_t us)
     ::sleep_us(us);
 }
 
+//! @brief ピンのGPIO番号を保持するデータクラス
+class Pin
+{
+    const uint8_t _pin_gpio;  //! 扱うピンのGPIO番号
+public:
+    //! @brief GPIO番号からPinを作成
+    //! @param pin_gpio GPIO番号
+    //! @note 整数型からPin型に自動で変換されます
+    Pin(uint8_t pin_gpio);
+    
+    //! @brief Pinをuint8_t型に変換
+    //! @return uint8_t型のGPIO番号
+    //! @note Pin型から整数型に自動で変換されます
+    operator uint8_t() const;
+
+    static constexpr MinGpio = 0;   //! 最小のGPIOピン番号
+    static constexpr MaxGpio = 28;  //! 最大のGPIOピン番号
+
+    //! @brief ピン番号として正しい値であるかを判定する
+    //! @param pin_gpio 正しいかを判定したいGPIO番号
+    //! @return ピン番号として取り得る値であったらtrue
+    static bool is_correct_pin(uint8_t pin_gpio);
+};
+
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す
 //! @param value 0かもしれない数

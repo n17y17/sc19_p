@@ -51,4 +51,30 @@ void print(const std::string& message) noexcept
 }
 
 
+/***** class Pin *****/
+Pin::Pin(uint8_t pin_gpio):
+    _pin_gpio(pin_gpio)
+{
+    if (is_correct_pin(pin_gpio) == false)
+    {
+        throw Error(__FILE__, __LINE__, "This GPIO number is not available");  // このGPIO番号は利用できません
+    }
+}
+
+Pin::operator uint8_t() const
+{
+    return _pin_gpio;
+}
+
+Pin::is_correct_pin(uint8_t pin_gpio)
+{
+    if (Pin::MinGpio <= pin_gpio && pin_gpio <= Pin::MaxGpio)
+    {
+return true;
+    } else {
+return false;
+    }
+}
+
+
 }
