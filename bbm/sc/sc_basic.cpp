@@ -52,7 +52,8 @@ void print(const std::string& message) noexcept
 
 
 /***** class Pin *****/
-Pin::Pin(uint8_t pin_gpio):
+
+Pin::Pin(int pin_gpio):
     _pin_gpio(pin_gpio)
 {
     if (is_correct_pin(pin_gpio) == false)
@@ -66,7 +67,7 @@ Pin::operator uint8_t() const
     return _pin_gpio;
 }
 
-Pin::is_correct_pin(uint8_t pin_gpio)
+bool Pin::is_correct_pin(int pin_gpio)
 {
     if (Pin::MinGpio <= pin_gpio && pin_gpio <= Pin::MaxGpio)
     {
