@@ -62,6 +62,11 @@ Pin::Pin(int pin_gpio):
     }
 }
 
+uint8_t Pin::get_gpio() const
+{
+    return _pin_gpio;
+}
+
 Pin::operator uint8_t() const
 {
     return _pin_gpio;

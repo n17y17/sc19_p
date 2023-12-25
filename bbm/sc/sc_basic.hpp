@@ -97,6 +97,10 @@ public:
     //! @param pin_gpio GPIO番号
     //! @note 整数型からPin型に自動で変換されます
     Pin(int pin_gpio);
+
+    //! @brief GPIO番号を取得
+    //! @return GPIO番号
+    uint8_t get_gpio() const;
     
     //! @brief Pinをuint8_t型に変換
     //! @return uint8_t型のGPIO番号
@@ -110,6 +114,10 @@ public:
     //! @param pin_gpio 正しいかを判定したいGPIO番号
     //! @return ピン番号として取り得る値であったらtrue
     static bool is_correct_pin(int pin_gpio);
+
+    class In;
+    class Out;
+    class Pulls;
 };
 
 

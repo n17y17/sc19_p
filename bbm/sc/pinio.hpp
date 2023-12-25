@@ -18,65 +18,71 @@
 namespace sc
 {
 
-//! @brief ピンによる出入力を行うクラス
-class Pin : Noncopyable
+//! @brief GPIOピンのプルアップ・プルダウンを行うクラス
+class Pin::Pulls
 {
-    Pin() = delete;
-    const uint8_t _pin_gpio;  //! 使用するピンのGPIO番号
-
+    Pulls() = delete;
 public:
     //! @brief ピンのプルアップ・プルダウン
     enum Pull
     {
+        no,  // プルアップ・ダウンを使用しない
         up,  // プルアップ
-        down,  //　プルダウン
-        no  // プルアップ・ダウンを使用しない
+        down  //　プルダウン
     };
 
-private:
     //! @brief プルアップ/プルダウンを設定
+    //! @param pin プル抵抗の設定を行う対象のGPIO番号
     //! @param pull プルアップ/プルダウンを指定
-    void set_pull(Pull pull) const;
-
-public:
-    //! @brief ピンによる入力を行うクラス
-    class In : Noncopyable
-    {
-    public:
-        //! @brief 入力用ピンをセットアップ
-        //! @param pin_gpio 入力用ピンのGPIO番号
-        In(uint8_t pin_gpio);
-
-        //! @brief 入力用ピンをセットアップ
-        //! @param pin_gpio 入力用ピンのGPIO番号
-        //! @param pull プルアップ/プルダウンを指定
-        In(uint8_t pin_gpio, Pull pull);
-
-        //! @brief 入力用ピンから読み込み
-        //! @return High(1)かLow(0)か
-        bool read() const;
-    };
-
-    //! @brief ピンによる出力を行うクラス
-    class Out : Noncopyable
-    {
-    public:
-        //! @brief 出力用ピンをセットアップ
-        //! @param pin_gpio 入力用ピンのGPIO番号
-        Out(uint8_t pin_gpio);
-
-        //! @brief 出力用ピンをセットアップ
-        //! @param pin_gpio 出力用ピンのGPIO番号
-        //! @param pull プルアップ/プルダウンを指定
-        Out(uint8_t pin_gpio, Pull pull);
-
-        //! @brief 出力用ピンに書き込み
-        //! @param level High(1)かLow(0)か
-        void write(bool level) const;
-    };
+    static void set_pull(Pin pin, Pin::Pulls::Pull pull);
 };
 
-using Pull = Pin::Pull;
+using Pull = Pin::Pulls::Pull;
+
+//! @brief ピンによる入力を行うクラス
+class Pin::In : Noncopyable
+{
+    const Pin _pin;  //! 使用するピンのGPIO番号
+public:
+    //! @brief 入力用ピンをセットアップ
+    //! @param pin 入力用ピンのGPIO番号
+    In(Pin pin);
+
+    //! @brief 入力用ピンをセットアップ
+    //! @param pin 入力用ピンのGPIO番号
+    //! @param pull プルアップ/プルダウンを指定
+    In(Pin pin, Pull pull);
+
+    //! @brief 入力用ピンから読み込み
+    //! @return High(1)かLow(0)か
+    bool read() const;
+};
+
+//! @brief ピンによる出力を行うクラス
+class Pin::Out : Noncopyable
+{
+    const Pin _pin;  //! 使用するピンのGPIO番号
+public:
+    //! @brief 出力用ピンをセットアップ
+    //! @param pin 入力用ピンのGPIO番号
+    Out(Pin pin);
+
+    //! @brief 出力用ピンをセットアップ
+    //! @param pin 出力用ピンのGPIO番号
+    //! @param pull プルアップ/プルダウンを指定
+    Out(Pin pin, Pull pull);
+
+    //! @brief GPIO出力ピンの出力レベル
+    enum Level
+    {
+        low = 0,
+        high = 1
+    };
+
+    //! @brief 出力用ピンに書き込み
+    //! @param level High(1)かLow(0)か
+    void write(Level level) const;
+};
 
 }
 
