@@ -109,6 +109,19 @@ template<> inline double not0(double value) {return (value ? value : 1e-10);}
 //! @return 0ではない数
 template<> inline long double not0(long double value) {return (value ? value : 1e-10);}
 
+
+//! @brief コピーを禁止するための親クラス
+class Noncopyable
+{
+protected:
+    Noncopyable() = default;
+    ~Noncopyable() = default;
+    Noncopyable(const Noncopyable&) = delete;
+    Noncopyable& operator=(const Noncopyable&) = delete;
+};
+// Noncopyableクラスは以下の資料を参考にして作成しました
+// https://cpp.aquariuscode.com/uncopyable-mixin
+
 }
 
 #endif  // SC19_PICO_SC_SC_HPP_
