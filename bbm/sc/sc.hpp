@@ -51,13 +51,13 @@ public:
 //! @brief メッセージを出力する関数です．
 //! @param message 出力する文字列
 //! 出力時にSDカードにも記録する場合などは，この関数に追記してください
-static void print(const std::string& message) noexcept;
+void print(const std::string& message) noexcept;
 
 //! @brief printfの形式で出力
 //! @param format フォーマット文字列
 //! @param args フォーマット文字列に埋め込む値
 template<typename... Args>
-static void print(const std::string& format, Args... args) noexcept
+void print(const std::string& format, Args... args) noexcept
 {
     try
     {
