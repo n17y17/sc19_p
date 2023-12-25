@@ -18,7 +18,7 @@
 namespace sc
 {
 
-//! @brief GPIOピンのプルアップ・プルダウンを行うクラス
+// GPIOピンのプルアップ・プルダウンを行うクラス
 class Pin::Pulls
 {
     Pulls() = delete;
@@ -39,7 +39,7 @@ public:
 
 using Pull = Pin::Pulls::Pull;
 
-//! @brief ピンによる入力を行うクラス
+// ピンによる入力を行うクラス
 class Pin::In : Noncopyable
 {
     const Pin _pin;  //! 使用するピンのGPIO番号
@@ -58,7 +58,7 @@ public:
     bool read() const;
 };
 
-//! @brief ピンによる出力を行うクラス
+// ピンによる出力を行うクラス
 class Pin::Out : Noncopyable
 {
     const Pin _pin;  //! 使用するピンのGPIO番号
@@ -72,16 +72,9 @@ public:
     //! @param pull プルアップ/プルダウンを指定
     Out(Pin pin, Pull pull);
 
-    //! @brief GPIO出力ピンの出力レベル
-    enum Level
-    {
-        low = 0,
-        high = 1
-    };
-
     //! @brief 出力用ピンに書き込み
-    //! @param level High(1)かLow(0)か
-    void write(Level level) const;
+    //! @param level high(1)かlow(0)か
+    void write(bool level) const;
 };
 
 }

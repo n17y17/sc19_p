@@ -115,8 +115,13 @@ public:
     //! @return ピン番号として取り得る値であったらtrue
     static bool is_correct_pin(int pin_gpio);
 
+    //! @brief ピンによる入力を行うクラス
     class In;
+
+    //! @brief ピンによる出力を行うクラス
     class Out;
+
+    //! @brief GPIOピンのプルアップ・プルダウンを行うクラス
     class Pulls;
 };
 

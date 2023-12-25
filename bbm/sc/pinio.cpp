@@ -70,7 +70,7 @@ Pin::Out::Out(Pin pin, Pull pull):
     Pin::Pulls::set_pull(pin, pull);  // プルアップ・ダウン抵抗を設定
 }
 
-void Pin::Out::write(Pin::Out::Level level) const
+void Pin::Out::write(bool level) const
 {
     ::gpio_put(_pin.get_gpio(), level);  // pico-SDKの関数  ピンにHighかLowを出力する
 }
