@@ -11,9 +11,9 @@
 //! @file pinio.hpp
 //! @brief GPIOピンの出入力
 
-#include "sc.hpp"
+#include "sc_basic.hpp"
 
-#include "hardware/gpio"
+#include "hardware/gpio.h"
 
 namespace sc
 {
@@ -80,3 +80,4 @@ using Pull = Pin::Pull;
 
 }
 
+#endif  // SC19_PICO_SC_PINIO_HPP_

@@ -9,7 +9,7 @@ add_library(SC STATIC
     ${CMAKE_CURRENT_LIST_DIR}/motor.cpp
     ${CMAKE_CURRENT_LIST_DIR}/pinio.cpp
     ${CMAKE_CURRENT_LIST_DIR}/pwm.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/sc.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/sc_basic.cpp
     ${CMAKE_CURRENT_LIST_DIR}/sd.cpp
     ${CMAKE_CURRENT_LIST_DIR}/spi_slave.cpp
     ${CMAKE_CURRENT_LIST_DIR}/spi.cpp
@@ -73,7 +73,7 @@ target_link_libraries(SC
 #     motor.cpp
 #     pinio.cpp
 #     pwm.cpp
-#     sc.cpp
+#     sc_basic.cpp
 #     sd.cpp
 #     spi_slave.cpp
 #     spi.cpp

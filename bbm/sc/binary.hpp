@@ -12,10 +12,10 @@
 //! @file binary.hpp
 //! @brief バイナリデータ(バイト列のデータ)を扱うためのコード
 
+#include "sc_basic.hpp"
+
 #include <string>
 #include <vector>
-
-#include "sc.hpp"
 
 namespace sc
 {
