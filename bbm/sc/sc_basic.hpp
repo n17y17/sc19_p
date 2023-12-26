@@ -88,6 +88,16 @@ inline void sleep_us(uint32_t us)
     ::sleep_us(us);
 }
 
+
+//! @brief ピンのプルアップ・プルダウン
+//! @note Pinクラスで使用します
+enum Pull
+{
+    no,  // プルアップ・ダウンを使用しない
+    up,  // プルアップ
+    down  //　プルダウン
+};
+
 //! @brief ピンのGPIO番号を保持するクラス
 class Pin
 {
@@ -115,21 +125,11 @@ public:
     //! @return ピン番号として取り得る値であったらtrue
     static bool is_correct_pin(int pin_gpio);
 
-    //! @brief ピンのプルアップ・プルダウン
-    enum Pull
-    {
-        no,  // プルアップ・ダウンを使用しない
-        up,  // プルアップ
-        down  //　プルダウン
-    };
-
     //! @brief プルアップ/プルダウンを設定
     //! @param pin プル抵抗の設定を行う対象のGPIO番号
     //! @param pull プルアップ/プルダウンを指定
-    void set_pull(Pin::Pull pull) const;
+    void set_pull(Pull pull) const;
 };
-
-using Pull = Pin::Pull;
 
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す
