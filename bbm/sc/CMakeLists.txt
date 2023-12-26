@@ -3,6 +3,7 @@
 # ビルドを実行するファイルを追加
 add_library(SC STATIC
     ${CMAKE_CURRENT_LIST_DIR}/binary.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/flush.cpp
     ${CMAKE_CURRENT_LIST_DIR}/i2c_slave.cpp
     ${CMAKE_CURRENT_LIST_DIR}/i2c.cpp
     ${CMAKE_CURRENT_LIST_DIR}/measurement.cpp
@@ -14,6 +15,7 @@ add_library(SC STATIC
     ${CMAKE_CURRENT_LIST_DIR}/spi_slave.cpp
     ${CMAKE_CURRENT_LIST_DIR}/spi.cpp
     ${CMAKE_CURRENT_LIST_DIR}/uart.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/unit.cpp
 )
 # 以下の資料を参考にしました
 # https://qiita.com/kikochan/items/732e46e92e7f29c18ce9
@@ -78,6 +80,7 @@ target_link_libraries(SC
 #     spi_slave.cpp
 #     spi.cpp
 #     uart.cpp
+#     unit.cpp
 # )
 
 # # ライブラリの読み込み
