@@ -82,5 +82,26 @@ return false;
     }
 }
 
+void Pin::set_pull(Pull pull) const
+{
+    switch (pull)
+    {
+        case Pull::up:
+        {
+            ::gpio_pull_up(_pin_gpio);  // pico-SDKの関数  プルアップ抵抗を設定
+            break;
+        }
+        case Pull::down:
+        {
+            ::gpio_pull_down(_pin_gpio);  // pico-SDKの関数  プルダウン抵抗を設定
+            break;
+        }
+        case Pull::no:
+        {
+            ::gpio_disable_pulls(_pin_gpio);  // pico-SDKの関数  プルアップ・プルダウンを無効化
+            break;
+        }
+    }
+}
 
 }
