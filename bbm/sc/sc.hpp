@@ -12,6 +12,7 @@
 #include "sc_basic.hpp"
 
 #include "binary.hpp"
+#include "flush.hpp"
 #include "i2c_slave.hpp"
 #include "i2c.hpp"
 #include "measurement.hpp"
@@ -22,5 +23,6 @@
 #include "spi_slave.hpp"
 #include "spi.hpp"
 #include "uart.hpp"
+#include "unit.hpp"
 
 #endif  // SC19_PICO_SC_SC_HPP_
