@@ -23,7 +23,7 @@ Error::Error(const std::string& FILE, int LINE, const std::string& message) noex
         const std::string output_message = "<<ERROR>>  FILE : " + std::string(FILE) + "  LINE : " + std::to_string(LINE) + "\n           MESSAGE : " + _message + "\n";  // 出力する形式に変形
         std::cerr << output_message << std::endl;  // cerrでエラーとして出力
 
-        Log::write(output_message);  // エラーをログデータに記録
+        print(output_message);  // エラーをログデータに記録
     }
     catch (const std::exception& e) {std::cerr << "<<ERROR>>  FILE : " << __FILE__ << "  LINE : " << __LINE__ << "/n           MESSAGE : Error logging failed.   " << e.what() << std::endl;}  // エラー：エラーログの記録に失敗しました
     catch(...) {std::cerr << "<<ERROR>>  FILE : " << __FILE__ << "  LINE : " << __LINE__ << "/n           MESSAGE : Error logging failed." << std::endl;}  // エラー：エラーログの記録に失敗しました
