@@ -24,7 +24,8 @@ namespace sc
 //! @note uint8_t型の配列では扱いにくいので代わりにこのクラスを使用します
 class Binary
 {
-    const std::vector<uint8_t> _binary_data;  // バイト列のデータ
+    const std::basic_string<uint8_t> _binary_data;  // バイト列のデータ
+    friend std::ostream& operator<<(std::ostream& os, const Binary& binary);  // coutで出力できるように，<<演算子から_binary_dataへのアクセスを許可している
 public:
     //! @brief バイト列を作成
     //! @param text string型のデータ
@@ -65,6 +66,10 @@ public:
     //! @note バイト列のサイズ以上のindexを指定した場合，エラーstd::out_of_rangeを返す．
     uint8_t at(std::size_t index) const;
 
+    //! @brief string型に変換
+    //! @return string型のデータ
+    std::string str() const;
+
     //! @brief バイト列のindex番目の値を返す
     //! @param index 先頭から何番目か．先頭は0
     //! @return index番目の値．
@@ -78,7 +83,21 @@ public:
     //! @brief string型への変換
     //! @return string型の値
     operator std::string() const;
+
+    //! @uint8_t型の配列に変換
+    //! @note 末尾に'\0'が付加されます．このポインタを通して値を変更した場合の動作は未定義です．
+    operator const uint8_t*() const;
 };
+
+
+//! @brief Binaryのデータをcoutで出力
+std::ostream& operator<<(std::ostream& os, const Binary& binary)
+{
+    os << binary._binary_data.c_str();
+    return os;
+}
+// この関数を作成するにあたり，以下を参考にしました
+// https://programming-place.net/ppp/contents/cpp/language/035.html#to_stream
 
 }
 

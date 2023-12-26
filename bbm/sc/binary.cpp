@@ -24,6 +24,11 @@ uint8_t Binary::at(std::size_t index) const
     return _binary_data.at(index);
 }
 
+std::string Binary::str() const
+{
+    return std::string(_binary_data.begin(), _binary_data.end());
+}
+
 uint8_t Binary::operator[](std::size_t index) const
 {
     return _binary_data[index];
@@ -31,12 +36,17 @@ uint8_t Binary::operator[](std::size_t index) const
 
 Binary::operator std::vector<uint8_t>() const
 {
-    return _binary_data;
+    return std::vector<uint8_t>(_binary_data.begin(), _binary_data.end());
 }
 
 Binary::operator std::string() const
 {
     return std::string(_binary_data.begin(), _binary_data.end());
+}
+
+Binary::operator const uint8_t*() const
+{
+    return _binary_data.c_str();
 }
 
 }
