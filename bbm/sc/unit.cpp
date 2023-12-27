@@ -13,15 +13,5 @@
 namespace sc
 {
 
-/***** class Hz *****/
-
-Hz::Hz(float hz_value):
-    _hz_value(hz_value)
-{
-    if (_hz_value < MinHz || MaxHz < _hz_value)
-    {
-        
-    }
-}
 
 }
