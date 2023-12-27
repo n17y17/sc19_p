@@ -49,4 +49,11 @@ Binary::operator const uint8_t*() const
     return _binary_data.c_str();
 }
 
+
+std::ostream& operator<<(std::ostream& os, const Binary& binary)
+{
+    os << binary._binary_data.c_str();
+    return os;
+}
+
 }

@@ -91,11 +91,7 @@ public:
 
 
 //! @brief Binaryのデータをcoutで出力
-std::ostream& operator<<(std::ostream& os, const Binary& binary)
-{
-    os << binary._binary_data.c_str();
-    return os;
-}
+std::ostream& operator<<(std::ostream& os, const Binary& binary);
 // この関数を作成するにあたり，以下を参考にしました
 // https://programming-place.net/ppp/contents/cpp/language/035.html#to_stream
 
