@@ -14,8 +14,11 @@
 #include "pico/stdlib.h"
 
 #define _USE_MATH_DEFINES  // 円周率などの定数を使用する  math.hを読み込む前に定義する必要がある (math.hはcmathやiostreamに含まれる)
+#include <cfloat>  // double型の最小値など
 #include <iostream>  // coutなど
 #include <string>
+
+#include "unit.hpp"
 
 namespace sc
 {
@@ -72,20 +75,12 @@ void print(const std::string& format, Args... args) noexcept
 // https://pyopyopyo.hatenablog.com/entry/2019/02/08/102456
 
 
-//! @brief ミリ秒間 待機
-//! @param ms 待機する時間(ms)
+//! @brief 指定した時間 待機
+//! @param time 待機する時間 (100_ms のように入力)
 //! @note RPi pico以外のマイコンを使用するときは，この関数を書き換えてください
-inline void sleep_ms(uint32_t ms)
+inline void sleep(_ms time)
 {
-    ::sleep_ms(ms);
-}
-
-//! @brief マイクロ秒間 待機
-//! @param us 待機する時間(μs)
-//! @note RPi pico以外のマイコンを使用するときは，この関数を書き換えてください
-inline void sleep_us(uint32_t us)
-{
-    ::sleep_us(us);
+    ::sleep_us(static_cast<double>(static_cast<_us>(time)));
 }
 
 
@@ -102,6 +97,10 @@ enum Pull
 class Pin
 {
     const uint8_t _pin_gpio;  //! 扱うピンのGPIO番号
+    
+    static constexpr uint8_t MinGpio = 0;   //! 最小のGPIOピン番号
+    static constexpr uint8_t MaxGpio = 28;  //! 最大のGPIOピン番号
+    
 public:
     //! @brief GPIO番号からPinを作成
     //! @param pin_gpio GPIO番号
@@ -116,9 +115,6 @@ public:
     //! @return uint8_t型のGPIO番号
     //! @note Pin型から整数型に自動で変換されます
     operator uint8_t() const;
-
-    static constexpr uint8_t MinGpio = 0;   //! 最小のGPIOピン番号
-    static constexpr uint8_t MaxGpio = 28;  //! 最大のGPIOピン番号
 
     //! @brief ピン番号として正しい値であるかを判定する
     //! @param pin_gpio 正しいかを判定したいGPIO番号
@@ -139,17 +135,17 @@ template<typename T> inline T not0(T value) {return (value ? value : 1);}
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す．floatバージョン
 //! @param value 0かもしれない数
-template<> inline float not0(float value) {return (value ? value : 1e-10);}
+template<> inline float not0(float value) {return (value ? value : FLT_TRUE_MIN);}
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す．doubleバージョン
 //! @param value 0かもしれない数
 //! @return 0ではない数
-template<> inline double not0(double value) {return (value ? value : 1e-10);}
+template<> inline double not0(double value) {return (value ? value : DBL_TRUE_MIN);}
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す．long doubleバージョン
 //! @param value 0かもしれない数
 //! @return 0ではない数
-template<> inline long double not0(long double value) {return (value ? value : 1e-10);}
+template<> inline long double not0(long double value) {return (value ? value : LDBL_TRUE_MIN);}
 
 
 //! @brief コピーを禁止するための親クラス
