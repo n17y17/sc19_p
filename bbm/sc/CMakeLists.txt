@@ -4,11 +4,12 @@
 add_library(SC STATIC
     ${CMAKE_CURRENT_LIST_DIR}/binary.cpp
     ${CMAKE_CURRENT_LIST_DIR}/flush.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/gpio.cpp
     ${CMAKE_CURRENT_LIST_DIR}/i2c_slave.cpp
     ${CMAKE_CURRENT_LIST_DIR}/i2c.cpp
     ${CMAKE_CURRENT_LIST_DIR}/measurement.cpp
     ${CMAKE_CURRENT_LIST_DIR}/motor.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/pinio.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/pin.cpp
     ${CMAKE_CURRENT_LIST_DIR}/pwm.cpp
     ${CMAKE_CURRENT_LIST_DIR}/sc_basic.cpp
     ${CMAKE_CURRENT_LIST_DIR}/sd.cpp
@@ -69,11 +70,13 @@ target_link_libraries(SC
 # # ビルドを実行するファイルを追加
 # add_executable(SC
 #     binary.cpp
+#     flush.cpp
+#     gpio.cpp
 #     i2c_slave.cpp
 #     i2c.cpp
 #     measurement.cpp
 #     motor.cpp
-#     pinio.cpp
+#     pin.cpp
 #     pwm.cpp
 #     sc_basic.cpp
 #     sd.cpp

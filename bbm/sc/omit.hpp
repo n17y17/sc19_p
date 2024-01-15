@@ -1,0 +1,48 @@
+#ifndef SC19_PICO_SC_OMIT_HPP_
+#define SC19_PICO_SC_OMIT_HPP_
+
+/**************************************************
+ * このプログラム群で使われているクラスなどの別名を宣言
+ * 
+ * I2C::SDAを単にSDAと入力できるようにするといった，別名や省略に関するコードです
+**************************************************/
+
+//! @file omit.hpp
+//! @brief 別名や省略に関するコード
+
+#include "sc_basic.hpp"
+
+#include "gpio.hpp"
+#include "i2c.hpp"
+
+
+namespace sc
+{
+    
+// GPIO<Out>にLEDという別名を付ける
+using LED = GPIO<Out>;  // GPIOピンでLEDを使う
+
+using SDA = I2C::SDA;
+using SCL = I2C::SCL;
+using SlaveAddr = I2C::SlaveAddr;
+
+using DataSize = size_t;  // バイナリデータのサイズ (何バイトか)
+
+//! @brief 通信先のデバイス内のメモリのアドレス
+//! @note I2CやSPIで通信する際に，通信先デバイスのメモリの何番地からデータを読み込むのか，書き込むのかを指定
+class MemoryAddr
+{
+    unsigned int _memory_addr;
+public:
+    explicit MemoryAddr(unsigned int memory_addr):
+        _memory_addr(memory_addr) {}
+    
+    operator I2C::MemoryAddr() const
+        {return I2C::MemoryAddr(_memory_addr);}
+    operator SPI::MemoryAddr() const
+        {return SPI::MemoryAddr(_memory_addr);}
+};
+
+}
+
+#endif // SC19_PICO_SC_OMIT_HPP_

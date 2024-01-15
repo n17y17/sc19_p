@@ -14,11 +14,13 @@
 #include "pico/stdlib.h"
 
 #define _USE_MATH_DEFINES  // 円周率などの定数を使用する  math.hを読み込む前に定義する必要がある (math.hはcmathやiostreamに含まれる)
+#include <algorithm>
 #include <cfloat>  // double型の最小値など
 #include <iostream>  // coutなど
 #include <string>
 
 #include "unit.hpp"
+#include "pin.hpp"
 
 namespace sc
 {
@@ -84,50 +86,6 @@ inline void sleep(_ms time)
 }
 
 
-//! @brief ピンのプルアップ・プルダウン
-//! @note Pinクラスで使用します
-enum Pull
-{
-    no,  // プルアップ・ダウンを使用しない
-    up,  // プルアップ
-    down  //　プルダウン
-};
-
-//! @brief ピンのGPIO番号を保持するクラス
-class Pin
-{
-    const uint8_t _pin_gpio;  //! 扱うピンのGPIO番号
-    
-    static constexpr uint8_t MinGpio = 0;   //! 最小のGPIOピン番号
-    static constexpr uint8_t MaxGpio = 28;  //! 最大のGPIOピン番号
-    
-public:
-    //! @brief GPIO番号からPinを作成
-    //! @param pin_gpio GPIO番号
-    //! @note 整数型からPin型に自動で変換されます
-    Pin(int pin_gpio);
-
-    //! @brief GPIO番号を取得
-    //! @return GPIO番号
-    uint8_t get_gpio() const;
-    
-    //! @brief Pinをuint8_t型に変換
-    //! @return uint8_t型のGPIO番号
-    //! @note Pin型から整数型に自動で変換されます
-    operator uint8_t() const;
-
-    //! @brief ピン番号として正しい値であるかを判定する
-    //! @param pin_gpio 正しいかを判定したいGPIO番号
-    //! @return ピン番号として取り得る値であったらtrue
-    static bool is_correct_pin(int pin_gpio);
-
-    //! @brief プルアップ/プルダウンを設定
-    //! @param pin プル抵抗の設定を行う対象のGPIO番号
-    //! @param pull プルアップ/プルダウンを指定
-    void set_pull(Pull pull) const;
-};
-
-
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す
 //! @param value 0かもしれない数
 //! @return 0ではない数
@@ -160,6 +118,104 @@ protected:
 // Noncopyableクラスは以下の資料を参考にして作成しました
 // https://cpp.aquariuscode.com/uncopyable-mixin
 
+}
+
+
+template<typename T> class all_of;  // 配列の要素と比較
+template<typename T> constexpr bool operator!= (T, all_of<T>);  // 配列の全ての要素と等しくないか
+
+//! @brief 配列の要素と比較
+template<typename T>
+struct all_of
+{
+    //! @brief 比較するためのリスト
+    const std::vector<T> _compare_list;
+    friend constexpr bool operator!=<> (T, all_of<T>);
+
+public:
+    //! @brief { }の要素と比較
+    //! @param init_list {1, 2, 3}などのデータ
+    all_of(std::initializer_list<T> init_list):
+        _compare_list(init_list) {}
+
+    //! @brief 配列の参照の要素と比較
+    //! @param array_ref 長さの情報を持った配列
+    template<std::size_t Size>
+    all_of(const T (&array_ref)[Size]):
+        _compare_list(array_ref, array_ref + Size) {}
+
+    //! @brief 配列の要素と比較
+    //! @param array_ptr 配列
+    //! @param size 配列の長さ
+    all_of(const T* array_ptr, size_t size):
+        _compare_list(array_ptr, array_ptr + size) {}
+
+    //! @brief 複数の引数と比較
+    template<typename... Params>
+    all_of(T elem1, T elem2, Params... elems):
+        _compare_list({elem1, elem2, elems...}) {}
+
+    //! @brief 複数の引数と比較
+    //! @param input_itr vectorやarrayなど
+    template<class InputItr>
+    all_of(InputItr input_itr):
+        _compare_list(input_itr.begin(), input_itr.end()) {}
+};
+
+//! @brief all_of 内の全ての要素と等しくないか
+template<typename T>
+constexpr bool operator!= (T left, all_of<T> right_list)
+{
+    return std::all_of(right_list._compare_list.begin(), right_list._compare_list.end(), [left](T right_1){return left != right_1;});
+}
+
+
+template<typename T> class any_of;  // 配列のいずれかの要素が等しいか
+template<typename T> constexpr bool operator== (T, any_of<T>);  // 配列のいずれかの要素が等しいか
+
+//! @brief 配列の要素と比較
+template<typename T>
+struct any_of
+{
+    //! @brief 比較するためのリスト
+    const std::vector<T> _compare_list;
+    friend constexpr bool operator==<> (T, any_of<T>);
+
+public:
+    //! @brief { }の要素と比較
+    //! @param init_list {1, 2, 3}などのデータ
+    any_of(std::initializer_list<T> init_list):
+        _compare_list(init_list) {}
+
+    //! @brief 配列の参照の要素と比較
+    //! @param array_ref 長さの情報を持った配列
+    template<std::size_t Size>
+    any_of(const T (&array_ref)[Size]):
+        _compare_list(array_ref, array_ref + Size) {}
+
+    //! @brief 配列の要素と比較
+    //! @param array_ptr 配列
+    //! @param size 配列の長さ
+    any_of(const T* array_ptr, size_t size):
+        _compare_list(array_ptr, array_ptr + size) {}
+
+    //! @brief 複数の引数と比較
+    template<typename... Params>
+    any_of(T elem1, T elem2, Params... elems):
+        _compare_list({elem1, elem2, elems...}) {}
+
+    //! @brief 複数の引数と比較
+    //! @param input_itr vectorやarrayなど
+    template<class InputItr>
+    any_of(InputItr input_itr):
+        _compare_list(input_itr.begin(), input_itr.end()) {}
+};
+
+//! @brief any_of 内のいずれかの要素と等しいか
+template<typename T>
+constexpr bool operator== (T left, any_of<T> right_list)
+{
+    return std::any_of(right_list._compare_list.begin(), right_list._compare_list.end(), [left](T right_1){return left == right_1;});
 }
 
 #endif  // SC19_PICO_SC_SC_BASIC_HPP_

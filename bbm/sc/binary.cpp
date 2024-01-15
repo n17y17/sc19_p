@@ -1,5 +1,3 @@
-#include "binary.hpp"
-
 /**************************************************
  * 通信などで利用する，バイナリデータ(バイト列のデータ)を扱うためのコードです
  * このファイルは，binary.hppに名前だけ書かれている関数の中身です
@@ -10,6 +8,8 @@
 
 //! @file binary.cpp
 //! @brief バイナリデータ(バイト列のデータ)を扱うためのコード
+
+#include "binary.hpp"
 
 namespace sc
 {
@@ -47,6 +47,21 @@ Binary::operator std::string() const
 Binary::operator const uint8_t*() const
 {
     return _binary_data.c_str();
+}
+
+Binary Binary::operator+ (Binary other_binary) const
+{
+    return Binary(this->_binary_data + other_binary._binary_data);
+}
+
+Binary operator+ (uint8_t first_byte, Binary binary)
+{
+    return Binary{first_byte} + binary;
+}
+
+Binary operator+ (Binary binary, uint8_t end_byte)
+{
+    return binary + Binary{end_byte};
 }
 
 

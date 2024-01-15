@@ -20,6 +20,14 @@
 namespace sc
 {
 
+class Binary;
+
+//! @brief Binaryのデータをcoutで出力
+std::ostream& operator<< (std::ostream&, const Binary&);
+// この関数を作成するにあたり，以下を参考にしました
+// https://programming-place.net/ppp/contents/cpp/language/035.html#to_stream
+
+
 //! @brief 通信用のバイト列．
 //! @note uint8_t型の配列では扱いにくいので代わりにこのクラスを使用します
 class Binary
@@ -35,7 +43,7 @@ public:
     //! @brief 配列への参照からバイト列を作成
     //! @param array_ref 長さの情報を持った配列
     template<class UINT8, std::size_t Size>
-    Binary(UINT8 (&array_ref)[Size]):
+    Binary(const UINT8 (&array_ref)[Size]):
         _binary_data(array_ref, array_ref + Size) {}
 
     //! @brief コンテナからバイト列を作成
@@ -53,12 +61,12 @@ public:
     //! @param array_ptr 配列
     //! @param size 配列の長さ
     template<class UINT8>
-    Binary(UINT8* array_ptr, size_t size):
+    Binary(const UINT8* array_ptr, size_t size):
         _binary_data(array_ptr, array_ptr + size) {}
 
     //! @brief バイト列のサイズを返す
     //! @return バイト列のサイズ
-    std::size_t size() const;
+    DataSize size() const;
 
     //! @brief バイト列のindex番目の値を返す
     //! @param index 先頭から何番目か．先頭は0
@@ -84,16 +92,19 @@ public:
     //! @return string型の値
     operator std::string() const;
 
-    //! @uint8_t型の配列に変換
+    //! @brief uint8_t型の配列に変換
     //! @note 末尾に'\0'が付加されます．このポインタを通して値を変更した場合の動作は未定義です．
     operator const uint8_t*() const;
+    
+    //! @brief バイナリデータを結合
+    Binary operator+ (Binary other_binary) const;
 };
 
+//! @brief バイナリデータの先頭に1バイト追加
+Binary operator+ (uint8_t first_byte, Binary binary);
 
-//! @brief Binaryのデータをcoutで出力
-std::ostream& operator<<(std::ostream& os, const Binary& binary);
-// この関数を作成するにあたり，以下を参考にしました
-// https://programming-place.net/ppp/contents/cpp/language/035.html#to_stream
+//! @brief バイナリデータの末尾に1バイト追加
+Binary operator+ (Binary binary, uint8_t end_byte);
 
 }
 
