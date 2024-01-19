@@ -29,7 +29,7 @@ Error::Error(const std::string& FILE, int LINE, const std::string& message) noex
     catch(...) {std::cerr << "<<ERROR>>  FILE : " << __FILE__ << "  LINE : " << __LINE__ << "/n           MESSAGE : Error logging failed." << std::endl;}  // エラー：エラーログの記録に失敗しました
 }
 
-Error::Error(const std::string& FILE, int LINE, const std::string& message, const std::exception& e) noexcept:
+Error::Error(const std::string& FILE, int LINE, const std::exception& e, const std::string& message) noexcept:
     Error(FILE, LINE, message + "   " + e.what()) {}
 
 const char* Error::what() const noexcept

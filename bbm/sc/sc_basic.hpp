@@ -25,6 +25,8 @@
 namespace sc
 {
 
+template<typename... Args> std::string format_str(const std::string&, Args...) noexcept;
+
 //! @brief エラーを記録し保持
 //! エラーを記録します．例外としてこのクラスを投げることができます．
 //! @note エラーを発生させる場合は次のようにしてください
@@ -42,14 +44,44 @@ public:
     //! @brief キャッチしたエラーを記録し，標準エラー出力に出力します
     //! @param FILE ＿FILE＿としてください (自動でファイル名に置き換わります)
     //! @param LINE ＿LINE＿としてください (自動で行番号に置き換わります)
-    //! @param message 出力したいエラーメッセージ (自動で改行)
     //! @param e キャッチした例外
-    Error(const std::string& FILE, int LINE, const std::string& message, const std::exception& e) noexcept;
+    //! @param message 出力したいエラーメッセージ (自動で改行)
+    Error(const std::string& FILE, int LINE, const std::exception& e, const std::string& message) noexcept;
+
+    //! @brief エラーを記録し，printfの形式で標準エラー出力に出力します
+    //! @param FILE __FILE__としてください (自動でファイル名に置き換わります)
+    //! @param LINE __LINE__としてください (自動で行番号に置き換わります)
+    //! @param format フォーマット文字列
+    //! @param args フォーマット文字列に埋め込む値
+    template<typename... Args>
+    Error(const std::string& FILE, int LINE, const std::string& format, Args... args) noexcept:
+        Error(FILE, LINE, format_str(format, args...)) {}
 
     //! @brief エラーについての説明文を返します
     //! @return エラーの説明
     const char* what() const noexcept override;
 };
+
+
+//! @brief printfの形式で文字列をフォーマット
+//! @param format フォーマット文字列
+//! @param args フォーマット文字列に埋め込む値
+template<typename... Args>
+std::string format_str(const std::string& format, Args... args) noexcept
+{
+    try
+    {
+        const size_t formatted_chars_num = std::snprintf(nullptr, 0, format.c_str(), args...);  // フォーマット後の文字数を計算
+        char formatted_chars[formatted_chars_num + 1];  // フォーマット済みの文字列を保存するための配列を作成
+        std::snprintf(&formatted_chars[0], formatted_chars_num + 1, format.c_str(), args...);  // フォーマットを実行
+return std::string(formatted_chars);  // フォーマット済み文字列を出力
+    }
+    catch(const std::exception& e) {Error(__FILE__, __LINE__, e, "Failed to format string");}  // ログの保存に失敗しました
+    catch(...) {Error(__FILE__, __LINE__, "Failed to format string");}  // ログの保存に失敗しました
+    return "ERROR";
+}
+// この関数は以下の資料を参考にて作成しました
+// https://pyopyopyo.hatenablog.com/entry/2019/02/08/102456
 
 
 //! @brief メッセージを出力する関数です．
@@ -63,26 +95,15 @@ void print(const std::string& message) noexcept;
 template<typename... Args>
 void print(const std::string& format, Args... args) noexcept
 {
-    try
-    {
-        const size_t formatted_chars_num = std::snprintf(nullptr, 0, format.c_str(), args...);  // フォーマット後の文字数を計算
-        char formatted_chars[formatted_chars_num + 1];  // フォーマット済みの文字列を保存するための配列を作成
-        std::snprintf(&formatted_chars[0], formatted_chars_num + 1, format.c_str(), args...);  // フォーマットを実行
-        print(formatted_chars);  // メッセージを出力
-    }
-    catch(const std::exception& e) {Error(__FILE__, __LINE__, "Failed to save log", e);}  // ログの保存に失敗しました
-    catch(...) {Error(__FILE__, __LINE__, "Failed to save log");}  // ログの保存に失敗しました
+    print(format_str(format, args...));
 }
-// この関数は以下の資料を参考にて作成しました
-// https://pyopyopyo.hatenablog.com/entry/2019/02/08/102456
 
 
 //! @brief 指定した時間 待機
 //! @param time 待機する時間 (100_ms のように入力)
-//! @note RPi pico以外のマイコンを使用するときは，この関数を書き換えてください
 inline void sleep(_ms time)
 {
-    ::sleep_us(static_cast<double>(static_cast<_us>(time)));
+    ::sleep_us(static_cast<double>(static_cast<_us>(time)));  // pico-sdkの関数  マイクロ秒待機
 }
 
 
@@ -121,101 +142,72 @@ protected:
 }
 
 
-template<typename T> class all_of;  // 配列の要素と比較
-template<typename T> constexpr bool operator!= (T, all_of<T>);  // 配列の全ての要素と等しくないか
+// //! @brief 配列がある値を含んでいるかを調べる
+// //! @param one 比較する値
+// //! @param list 中身を調べる配列
+// //! @return 配列listの要素が一つでもoneと等しかったらtrue，いずれも等しくなかったらfalse
+// template<typename T, typename U>
+// constexpr bool any_of(T&& one, U&& list)
+// {
+//     for (auto element : list)
+//     {
+//         if (one == element)
+// return true;
+//     }
+//     return false;
+// }
 
-//! @brief 配列の要素と比較
-template<typename T>
-struct all_of
-{
-    //! @brief 比較するためのリスト
-    const std::vector<T> _compare_list;
-    friend constexpr bool operator!=<> (T, all_of<T>);
-
-public:
-    //! @brief { }の要素と比較
-    //! @param init_list {1, 2, 3}などのデータ
-    all_of(std::initializer_list<T> init_list):
-        _compare_list(init_list) {}
-
-    //! @brief 配列の参照の要素と比較
-    //! @param array_ref 長さの情報を持った配列
-    template<std::size_t Size>
-    all_of(const T (&array_ref)[Size]):
-        _compare_list(array_ref, array_ref + Size) {}
-
-    //! @brief 配列の要素と比較
-    //! @param array_ptr 配列
-    //! @param size 配列の長さ
-    all_of(const T* array_ptr, size_t size):
-        _compare_list(array_ptr, array_ptr + size) {}
-
-    //! @brief 複数の引数と比較
-    template<typename... Params>
-    all_of(T elem1, T elem2, Params... elems):
-        _compare_list({elem1, elem2, elems...}) {}
-
-    //! @brief 複数の引数と比較
-    //! @param input_itr vectorやarrayなど
-    template<class InputItr>
-    all_of(InputItr input_itr):
-        _compare_list(input_itr.begin(), input_itr.end()) {}
-};
-
-//! @brief all_of 内の全ての要素と等しくないか
-template<typename T>
-constexpr bool operator!= (T left, all_of<T> right_list)
-{
-    return std::all_of(right_list._compare_list.begin(), right_list._compare_list.end(), [left](T right_1){return left != right_1;});
-}
-
-
-template<typename T> class any_of;  // 配列のいずれかの要素が等しいか
-template<typename T> constexpr bool operator== (T, any_of<T>);  // 配列のいずれかの要素が等しいか
-
-//! @brief 配列の要素と比較
+//! @brief 配列がある値を含んでいるかを調べる
 template<typename T>
 struct any_of
 {
-    //! @brief 比較するためのリスト
-    const std::vector<T> _compare_list;
-    friend constexpr bool operator==<> (T, any_of<T>);
+    const T& _compare_list;
 
-public:
-    //! @brief { }の要素と比較
-    //! @param init_list {1, 2, 3}などのデータ
-    any_of(std::initializer_list<T> init_list):
-        _compare_list(init_list) {}
-
-    //! @brief 配列の参照の要素と比較
-    //! @param array_ref 長さの情報を持った配列
-    template<std::size_t Size>
-    any_of(const T (&array_ref)[Size]):
-        _compare_list(array_ref, array_ref + Size) {}
-
-    //! @brief 配列の要素と比較
-    //! @param array_ptr 配列
-    //! @param size 配列の長さ
-    any_of(const T* array_ptr, size_t size):
-        _compare_list(array_ptr, array_ptr + size) {}
-
-    //! @brief 複数の引数と比較
-    template<typename... Params>
-    any_of(T elem1, T elem2, Params... elems):
-        _compare_list({elem1, elem2, elems...}) {}
-
-    //! @brief 複数の引数と比較
-    //! @param input_itr vectorやarrayなど
-    template<class InputItr>
-    any_of(InputItr input_itr):
-        _compare_list(input_itr.begin(), input_itr.end()) {}
+    //! @brief 配列がある値を含んでいるかを調べる
+    //! @param list 中身を比べる配列
+    constexpr any_of(const T& list):
+        _compare_list(list) {}
 };
 
-//! @brief any_of 内のいずれかの要素と等しいか
-template<typename T>
-constexpr bool operator== (T left, any_of<T> right_list)
+//! @brief 配列がある値を含んでいるかを調べる
+//! @param one 比較する値
+//! @param list 比較する配列
+template<typename T, typename U>
+constexpr bool operator==(const T& one, const any_of<U>& list)
 {
-    return std::any_of(right_list._compare_list.begin(), right_list._compare_list.end(), [left](T right_1){return left == right_1;});
+    for (auto element : list._compare_list)
+    {
+        if (one == element)
+return true;
+    }
+    return false;
+}
+
+
+//! @brief 配列がある値を含んでいないことを調べる
+template<typename T>
+struct all_of
+{
+    const T& _compare_list;
+
+    //! @brief 配列がある値を含んでいないことを調べる
+    //! @param list 中身を比べる配列
+    constexpr all_of(const T& list):
+        _compare_list(list) {}
+};
+
+//! @brief 配列がある値を含んでいないことを調べる
+//! @param one 比較する値
+//! @param list 比較する配列
+template<typename T, typename U>
+constexpr bool operator!=(const T& one, const all_of<U>& list)
+{
+    for (auto element : list._compare_list)
+    {
+        if (one == element)
+return false;
+    }
+    return true;
 }
 
 #endif  // SC19_PICO_SC_SC_BASIC_HPP_
