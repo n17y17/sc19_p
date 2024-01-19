@@ -396,71 +396,62 @@ public:
 
 //! @brief 単位同士の比較
 template<class Unit, class Unit2>
-bool operator<  (const Unit& left_param, const Unit2& right_param)
+auto operator<  (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, bool>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot compare values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xf0\x94\xe4\x8a\x72\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\x81\x44\n\n");  // 単位型と非単位型の値を比較することはできません．
     return static_cast<double>(left_param) <  static_cast<double>(static_cast<Unit>(right_param));
 }
 //! @brief 単位同士の比較
 template<class Unit, class Unit2>
-bool operator<= (const Unit& left_param, const Unit2& right_param)
+auto operator<= (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, bool>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot compare values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xf0\x94\xe4\x8a\x72\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\x81\x44\n\n");  // 単位型と非単位型の値を比較することはできません．
     return static_cast<double>(left_param) <= static_cast<double>(static_cast<Unit>(right_param));
 }
 //! @brief 単位同士の比較
 template<class Unit, class Unit2>
-bool operator== (const Unit& left_param, const Unit2& right_param)
+auto operator== (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, bool>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot compare values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xf0\x94\xe4\x8a\x72\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\x81\x44\n\n");  // 単位型と非単位型の値を比較することはできません．
     return static_cast<double>(left_param) == static_cast<double>(static_cast<Unit>(right_param));
 }
 //! @brief 単位同士の比較
 template<class Unit, class Unit2>
-bool operator>= (const Unit& left_param, const Unit2& right_param)
+auto operator>= (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, bool>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot compare values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xf0\x94\xe4\x8a\x72\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\x81\x44\n\n");  // 単位型と非単位型の値を比較することはできません．
     return static_cast<double>(left_param) >= static_cast<double>(static_cast<Unit>(right_param));
 }
 //! @brief 単位同士の比較
 template<class Unit, class Unit2>
-bool operator>  (const Unit& left_param, const Unit2& right_param)
+auto operator>  (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, bool>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot compare values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xf0\x94\xe4\x8a\x72\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\x81\x44\n\n");  // 単位型と非単位型の値を比較することはできません．
     return static_cast<double>(left_param) >  static_cast<double>(static_cast<Unit>(right_param));
 }
 //! @brief 単位同士の比較
 template<class Unit, class Unit2>
-bool operator!= (const Unit& left_param, const Unit2& right_param)
+auto operator!= (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, bool>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot compare values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xf0\x94\xe4\x8a\x72\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\x81\x44\n\n");  // 単位型と非単位型の値を比較することはできません．
     return static_cast<double>(left_param) != static_cast<double>(static_cast<Unit>(right_param));
 }
 
 //! @brief 単位同士の演算
 template<class Unit, class Unit2>
-Unit operator+ (const Unit& left_param, const Unit2& right_param)
+auto operator+ (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot perform operations on values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xc5\x89\x89\x8e\x5a\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\n\n");  // 単位型と非単位型の値で演算することはできません．
     return Unit(static_cast<double>(left_param) + static_cast<double>(static_cast<Unit>(right_param)));
 }
 //! @brief 単位同士の演算
 template<class Unit, class Unit2>
-Unit operator- (const Unit& left_param, const Unit2& right_param)
+auto operator- (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot perform operations on values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xc5\x89\x89\x8e\x5a\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\n\n");  // 単位型と非単位型の値で演算することはできません．
     return Unit(static_cast<double>(left_param) - static_cast<double>(static_cast<Unit>(right_param)));
 }
 //! @brief 単位同士の演算
 template<class Unit, class Unit2>
-Unit operator* (const Unit& left_param, const Unit2& right_param)
+auto operator* (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot perform operations on values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xc5\x89\x89\x8e\x5a\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\n\n");  // 単位型と非単位型の値で演算することはできません．
     return Unit(static_cast<double>(left_param) * static_cast<double>(static_cast<Unit>(right_param)));
 }
 //! @brief 単位同士の演算
 template<class Unit, class Unit2>
-Unit operator/ (const Unit& left_param, const Unit2& right_param)
+auto operator/ (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
 {
     static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot perform operations on values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xc5\x89\x89\x8e\x5a\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\n\n");  // 単位型と非単位型の値で演算することはできません．
     return Unit(static_cast<double>(left_param) / [](double d){return (d ? d : DBL_TRUE_MIN);}(static_cast<double>(static_cast<Unit>(right_param))));  // ゼロ除算を防止している
