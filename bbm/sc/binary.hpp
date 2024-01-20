@@ -66,7 +66,7 @@ public:
 
     //! @brief バイト列のサイズを返す
     //! @return バイト列のサイズ
-    DataSize size() const;
+    size_t size() const;
 
     //! @brief バイト列のindex番目の値を返す
     //! @param index 先頭から何番目か．先頭は0

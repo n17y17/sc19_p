@@ -52,6 +52,7 @@ public:
     void off() const;
 };
 
+using LED = GPIO<Out>;  // LEDによる出力
 
 //! @brief ピンによる入力を行うクラス
 template<>

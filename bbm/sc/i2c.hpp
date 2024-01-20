@@ -20,62 +20,63 @@
 namespace sc
 {
 
+//! @brief I2C0かI2C1か
+enum I2C_ID
+{
+    i2c_0,
+    i2c_1
+};
+
+//! @brief  I2CのSDAピン
+class SDA : public Pin
+{
+    static constexpr uint8_t EnableI2C0_SDA[] = {0, 4, 8, 12, 16, 20};  // I2C0のSDAピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableI2C1_SDA[] = {2, 6, 10, 14, 18, 26};  // I2C1のSDAピンのGPIO番号が取り得る値
+public:
+    //! @brief SDAピンを指定
+    //! @param sda_gpio SDAピンのGPIO番号
+    SDA(int sda_gpio);
+
+    //! @brief i2cポートの種類を返す
+    //! @return i2c0かi2c1か
+    I2C_ID get_i2c_id() const;
+};
+
+//! @brief  I2CのSCLピン
+class SCL : public Pin
+{
+    static constexpr uint8_t EnableI2C0_SCL[] = {1, 5, 9, 13, 17, 21};  // I2C0のSCLピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableI2C1_SCL[] = {3, 7, 11, 15, 19, 27};  // I2C1のSCLピンのGPIO番号が取り得る値
+public:
+    //! @brief SCLピンを指定
+    //! @param scl_gpio SCLピンのGPIO番号
+    SCL(int scl_gpio);
+
+    //! @brief i2cポートの種類を返す
+    //! @return i2c0かi2c1か
+    I2C_ID get_i2c_id() const;
+};
+
+//! @brief I2Cのスレーブアドレス (通信先のデバイスのID)
+class SlaveAddr
+{
+    const uint8_t _slave_addr;
+public:
+    //! @brief I2Cのスレーブアドレス (通信先のデバイスのID)
+    SlaveAddr(uint8_t slave_addr);
+
+    //! @brief スレーブアドレスを取得
+    uint8_t get_addr() const;
+
+    //! @brief スレーブアドレス
+    operator uint8_t() const;
+};
+
+
 //! @brief I2C通信
-class I2C : Noncopyable
+class I2C
 {
 public:
-    //! @brief I2C0かI2C1か
-    enum ID
-    {
-        i2c_0,
-        i2c_1
-    };
-
-    //! @brief  I2CのSDAピン
-    class SDA : public Pin
-    {
-        static constexpr uint8_t EnableI2C0_SDA[] = {0, 4, 8, 12, 16, 20};  // I2C0のSDAピンのGPIO番号が取り得る値
-        static constexpr uint8_t EnableI2C1_SDA[] = {2, 6, 10, 14, 18, 26};  // I2C1のSDAピンのGPIO番号が取り得る値
-    public:
-        //! @brief SDAピンを指定
-        //! @param sda_gpio SDAピンのGPIO番号
-        SDA(int sda_gpio);
-
-        //! @brief i2cポートの種類を返す
-        //! @return i2c0かi2c1か
-        ID get_i2c_id() const;
-    };
-
-    //! @brief  I2CのSCLピン
-    class SCL : public Pin
-    {
-        static constexpr uint8_t EnableI2C0_SCL[] = {1, 5, 9, 13, 17, 21};  // I2C0のSCLピンのGPIO番号が取り得る値
-        static constexpr uint8_t EnableI2C1_SCL[] = {3, 7, 11, 15, 19, 27};  // I2C1のSCLピンのGPIO番号が取り得る値
-    public:
-        //! @brief SCLピンを指定
-        //! @param scl_gpio SCLピンのGPIO番号
-        SCL(int scl_gpio);
-
-        //! @brief i2cポートの種類を返す
-        //! @return i2c0かi2c1か
-        ID get_i2c_id() const;
-    };
-
-    //! @brief I2Cのスレーブアドレス (通信先のデバイスのID)
-    class SlaveAddr
-    {
-        const uint8_t _slave_addr;
-    public:
-        //! @brief I2Cのスレーブアドレス (通信先のデバイスのID)
-        SlaveAddr(uint8_t slave_addr);
-
-        //! @brief スレーブアドレスを取得
-        uint8_t get_addr() const;
-
-        //! @brief スレーブアドレス
-        operator uint8_t() const;
-    };
-
     //! @brief 通信先のデバイス内のメモリのアドレス
     class MemoryAddr
     {
@@ -91,7 +92,7 @@ private:
     const SDA _sda;  // I2Cで使用するSDAピン
     const SCL _scl;  // I2Cで使用するSCLピン
     const Freq _freq;  // I2Cの通信速度
-    const ID _i2c_id;  // I2C0かI2C1か
+    const I2C_ID _i2c_id;  // I2C0かI2C1か
 
 public:
     //! @brief I2Cをセットアップ
@@ -131,7 +132,6 @@ public:
 private:
     static bool IsUse[2];  // 既にI2C0とI2C1を使用しているか
 };
-bool I2C::IsUse[2] = {false, false};
 
 }
 

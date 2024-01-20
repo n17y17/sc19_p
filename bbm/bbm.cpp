@@ -7,19 +7,14 @@ int main()
 {
 /***** setup *****/
 
-    GPIO<In> us_pin(Pin(16)), ms_pin(17), s_pin(18), min_pin(19);
-    print("start");
-    // I2C isc(RX(5), SCL(2), 20'000_hz);
-    GPIO<Out> led(Pin(2));
-    LED led2(Pin(3));
-
+    I2C i2c(SDA(0), SCL(1));
+    // BME280 bme(i2c);  // <== こんなかんじでセットアップしたい
 
 /***** loop *****/
     while (true)
     {
-        std::cout << "こんにちは" << std::endl;
-        sleep(1_s);
-        
+        // bme_data = bme.read();  // <== こんなかんじで受信できるようにしたい
+        sleep(19_ms);
     }
 
     return 0;

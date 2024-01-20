@@ -14,19 +14,11 @@
 
 #include "gpio.hpp"
 #include "i2c.hpp"
+#include "spi.hpp"
 
 
 namespace sc
 {
-    
-// GPIO<Out>にLEDという別名を付ける
-using LED = GPIO<Out>;  // GPIOピンでLEDを使う
-
-using SDA = I2C::SDA;
-using SCL = I2C::SCL;
-using SlaveAddr = I2C::SlaveAddr;
-
-using DataSize = size_t;  // バイナリデータのサイズ (何バイトか)
 
 //! @brief 通信先のデバイス内のメモリのアドレス
 //! @note I2CやSPIで通信する際に，通信先デバイスのメモリの何番地からデータを読み込むのか，書き込むのかを指定

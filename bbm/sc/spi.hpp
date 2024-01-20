@@ -11,7 +11,7 @@
 //! @file spi.hpp
 //! @brief SPIでの入出力
 
-#include "gpio.hpp";
+#include "gpio.hpp"
 
 #include "sc_basic.hpp"
 #include "binary.hpp"
@@ -22,95 +22,96 @@
 namespace sc
 {
 
-//! @brief SPI通信
-class SPI : Noncopyable
+    
+//! @brief SPI0かSPI1か
+enum SPI_ID
 {
+    spi_0,
+    spi_1
+};
+
+//! @brief  SPIのMISOピン
+class MISO : public Pin
+{
+    static constexpr uint8_t EnableSPI0_MISO[] = {0, 4, 16};  // SPI0のMISOピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableSPI1_MISO[] = {8, 12};  // SPI1のMISOピンのGPIO番号が取り得る値
 public:
-    //! @brief SPI0かSPI1か
-    enum ID
-    {
-        spi_0,
-        spi_1
-    };
+    //! @brief MISOピンを指定
+    //! @param miso_gpio MISOピンのGPIO番号
+    MISO(int miso_gpio);
 
-    //! @brief  SPIのMISOピン
-    class MISO : public Pin
-    {
-        static constexpr uint8_t EnableSPI0_MISO[] = {0, 4, 16};  // SPI0のMISOピンのGPIO番号が取り得る値
-        static constexpr uint8_t EnableSPI1_MISO[] = {8, 12};  // SPI1のMISOピンのGPIO番号が取り得る値
-    public:
-        //! @brief MISOピンを指定
-        //! @param miso_gpio MISOピンのGPIO番号
-        MISO(int miso_gpio);
+    //! @brief spiポートの種類を返す
+    //! @return spi0かspi1か
+    SPI_ID get_spi_id() const;
+};
+using RX = MISO;
 
-        //! @brief spiポートの種類を返す
-        //! @return spi0かspi1か
-        ID get_spi_id() const;
-    };
-    using RX = MISO;
+//! @brief CSピンを指定
+class CS
+{
+    const std::vector<Pin> _cs_pins;
+public:
+    //! @brief CSピンを指定
+    //! @param cs_gpios CSピンのGPIO番号を(3, 4, 5)のように並べて入力
+    template<typename... T>
+    CS(T... cs_gpios):
+        _cs_pins(Pin(cs_gpios)...) {}
 
     //! @brief CSピンを指定
-    class CSs
-    {
-        const std::vector<Pin> _cs_pins;
-    public:
-        //! @brief CSピンを指定
-        //! @param cs_gpios CSピンのGPIO番号を(3, 4, 5)のように並べて入力
-        template<typename... T>
-        CSs(T... cs_gpios):
-            _cs_pins(Pin(cs_gpios)...) {}
+    //! @param cs_gpios CSピンのGPIO番号を{3, 4, 5}のように並べて入力
+    CS(std::initializer_list<Pin> cs_gpios):
+        _cs_pins(cs_gpios) {}
 
-        //! @brief CSピンを指定
-        //! @param cs_gpios CSピンのGPIO番号を{3, 4, 5}のように並べて入力
-        CSs(std::initializer_list<Pin> cs_gpios):
-            _cs_pins(cs_gpios) {}
+    //! @brief CSピンを取得
+    operator std::vector<Pin>() const
+        {return _cs_pins;}
+    const std::vector<Pin>& get() const 
+        {return _cs_pins;}
 
-        //! @brief CSピンを取得
-        operator std::vector<Pin>() const
-            {return _cs_pins;}
-        
-        //! @brief 全てのピンが未使用であるかを確かめる
-        bool no_use() const;
-    };
+    //! @brief 全てのピンが未使用であるかを確かめる
+    bool no_use() const;
 
-    //! @brief  SPIのMSCKピン
-    class SCK : public Pin
-    {
-        static constexpr uint8_t EnableSPI0_SCK[] = {2, 6, 18};  // SPI0のSCKピンのGPIO番号が取り得る値
-        static constexpr uint8_t EnableSPI1_SCK[] = {10, 14};  // SPI1のSCKピンのGPIO番号が取り得る値
-    public:
-        //! @brief SCKピンを指定
-        //! @param sck_gpio SCKピンのGPIO番号
-        SCK(int sck_gpio);
+    //! @brief 保存されているCSピンの数を取得
+    size_t size() const
+        {return _cs_pins.size();}
+};
 
-        //! @brief spiポートの種類を返す
-        //! @return spi0かspi1か
-        ID get_spi_id() const;
-    };
+//! @brief  SPIのMSCKピン
+class SCK : public Pin
+{
+    static constexpr uint8_t EnableSPI0_SCK[] = {2, 6, 18};  // SPI0のSCKピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableSPI1_SCK[] = {10, 14};  // SPI1のSCKピンのGPIO番号が取り得る値
+public:
+    //! @brief SCKピンを指定
+    //! @param sck_gpio SCKピンのGPIO番号
+    SCK(int sck_gpio);
 
-    //! @brief  SPIのMOSIピン
-    class MOSI : public Pin
-    {
-        static constexpr uint8_t EnableSPI0_MOSI[] = {3, 7, 19};  // SPI0のMOSIピンのGPIO番号が取り得る値
-        static constexpr uint8_t EnableSPI1_MOSI[] = {11, 15};  // SPI1のMOSIピンのGPIO番号が取り得る値
-    public:
-        //! @brief MOSIピンを指定
-        //! @param mosi_gpio MOSIピンのGPIO番号
-        MOSI(int mosi_gpio);
+    //! @brief spiポートの種類を返す
+    //! @return spi0かspi1か
+    SPI_ID get_spi_id() const;
+};
 
-        //! @brief spiポートの種類を返す
-        //! @return spi0かspi1か
-        ID get_spi_id() const;
-    };
-    using TX = MOSI;
+//! @brief  SPIのMOSIピン
+class MOSI : public Pin
+{
+    static constexpr uint8_t EnableSPI0_MOSI[] = {3, 7, 19};  // SPI0のMOSIピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableSPI1_MOSI[] = {11, 15};  // SPI1のMOSIピンのGPIO番号が取り得る値
+public:
+    //! @brief MOSIピンを指定
+    //! @param mosi_gpio MOSIピンのGPIO番号
+    MOSI(int mosi_gpio);
 
-    //! @brief SPIのCSピンの番号 (通信先のデバイスのID)
-    class CS : public Pin
-    {
-    public:
-        //! @brief SPIのCSピンの番号 (通信先のデバイスのID)
-        CS(int cs_gpio);
-    };
+    //! @brief spiポートの種類を返す
+    //! @return spi0かspi1か
+    SPI_ID get_spi_id() const;
+};
+using TX = MOSI;
+
+
+//! @brief SPI通信
+class SPI
+{
+public:
 
     //! @brief 通信先のデバイス内のメモリのアドレス
     class MemoryAddr
@@ -121,6 +122,11 @@ public:
         MemoryAddr(unsigned int memory_addr);
 
         operator uint8_t() const;
+
+        //! @brief メモリアドレスへのポインタ
+        //! @note ポインタを介して値を変更した場合，動作は未定義
+        const uint8_t* operator&() const
+            {return &_memory_addr;}
     };
 
 private:
@@ -128,8 +134,8 @@ private:
     const SCK _sck;  // SPIで使用するSCKピン
     const MOSI _mosi;  // SPIで使用するMOSIピン
     const Freq _freq;  // SPIの通信速度
-    const ID _spi_id;  // SPI0かSPI1か
-    std::vector<const GPIO<Out>&> _cs_pins;  // SPIで使用する全てのCSピン
+    const SPI_ID _spi_id;  // SPI0かSPI1か
+    std::vector<GPIO<Out>> _cs_pins;  // SPIで使用する全てのCSピン
 
 public:
     //! @brief SPIをセットアップ
@@ -137,7 +143,7 @@ public:
     //! @param cs SPIで使用するすべてのCSピン
     //! @param sck SPIで使用するSCKピン
     //! @param mosi SPIで使用するMOSIピン
-    SPI(MISO miso, CSs cs, SCK sck, MOSI mosi);
+    SPI(MISO miso, CS cs, SCK sck, MOSI mosi);
 
     //! @brief SPIをセットアップ
     //! @param miso SPIで使用するMISOピン
@@ -145,7 +151,7 @@ public:
     //! @param sck SPIで使用するSCKピン
     //! @param mosi SPIで使用するMOSIピン
     //! @param freq SPIの通信速度 (10000_hz のように入力)
-    SPI(MISO miso, CSs cs, SCK sck, MOSI mosi, Freq freq);
+    SPI(MISO miso, CS cs, SCK sck, MOSI mosi, Freq freq);
 
     //! @brief SPIによる送信
     //! @param output_data 送信するデータ
@@ -173,12 +179,6 @@ public:
 private:
     static bool IsUse[2];  // 既にSPI0とSPI1を使用しているか
 };
-bool SPI::IsUse[2] = {false, false};
-using MISO = SPI::MISO;
-using CSs = SPI::CSs;
-using SCK = SPI::SCK;
-using MOSI = SPI::MOSI;
-using CS = SPI::CS;
 
 }
 
