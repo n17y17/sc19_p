@@ -7,14 +7,16 @@ int main()
 {
 /***** setup *****/
 
-    I2C i2c(SDA(0), SCL(1));
-    // BME280 bme(i2c);  // <== こんなかんじでセットアップしたい
+    uint8_t sda_pin = 5, scl_pin = 6;
+    // BME280 bme(sda_pin, scl_pin);  // <== こんなかんじでセットアップしたい
+    HCSR04 hcsr04;
 
 /***** loop *****/
     while (true)
     {
         // bme_data = bme.read();  // <== こんなかんじで受信できるようにしたい
-        sleep(19_ms);
+        int kyori = hcsr04.gettingTime();
+        printf("%d\n", kyori);
     }
 
     return 0;

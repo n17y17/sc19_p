@@ -5,6 +5,7 @@
 #include <cstdint>
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
+#include "sc.hpp"
 
 // Class declaration
 class HCSR04 {
