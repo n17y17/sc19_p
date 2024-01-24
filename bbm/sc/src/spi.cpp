@@ -170,6 +170,10 @@ throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the
 
 Binary SPI::read(size_t size, CS cs_pin) const
 {
+    if (cs_pin.size() > 1)
+    {
+throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the same time");  // 複数のデバイスと同時に通信することはできません
+    }
     std::vector<uint8_t> input_data(size);
     size_t input_size = 0;  // 実際には何バイト受信したか
     _cs_pins.at(cs_pin.get().at(0)).write(0);  // 通信先のデバイスにつながるCSピンをオフにして，通信の開始を伝える
@@ -181,6 +185,10 @@ Binary SPI::read(size_t size, CS cs_pin) const
 
 void SPI::write_memory(Binary output_data, CS cs_pin, MemoryAddr memory_addr) const
 {
+    if (cs_pin.size() > 1)
+    {
+throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the same time");  // 複数のデバイスと同時に通信することはできません
+    }
     Binary corrected_data = uint8_t(memory_addr & 0b01111111) + output_data;
     _cs_pins.at(cs_pin.get().at(0)).write(0);  // 通信先のデバイスにつながるCSピンをオフにして，通信の開始を伝える
     ::spi_write_blocking((_spi_id ? spi1 : spi0), corrected_data, corrected_data.size());  // pico-SDKの関数  SPIで送信
@@ -189,6 +197,10 @@ void SPI::write_memory(Binary output_data, CS cs_pin, MemoryAddr memory_addr) co
 
 Binary SPI::read_memory(size_t size, CS cs_pin, MemoryAddr memory_addr) const
 {
+    if (cs_pin.size() > 1)
+    {
+throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the same time");  // 複数のデバイスと同時に通信することはできません
+    }
     std::vector<uint8_t> input_data(size);
     uint8_t write_memory_addr = memory_addr | 0b10000000;
     size_t input_size = 0;  // 実際には何バイト受信したか
