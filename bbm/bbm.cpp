@@ -7,13 +7,15 @@ int main()
 {
 /***** setup *****/
 
-    uint8_t sda_pin = 5, scl_pin = 6;
+    // uint8_t sda_pin = 5, scl_pin = 6;
     // BME280 bme(sda_pin, scl_pin);  // <== こんなかんじでセットアップしたい
     HCSR04 hcsr04;
 
 /***** loop *****/
     while (true)
     {
+        std::initializer_list<int> v({1, 2, 3});
+        Binary data({1, 2, 3});
         // bme_data = bme.read();  // <== こんなかんじで受信できるようにしたい
         int kyori = hcsr04.gettingTime();
         printf("%d\n", kyori);

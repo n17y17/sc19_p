@@ -127,11 +127,9 @@ SPI::SPI(MISO miso, CS cs, SCK sck, MOSI mosi, Freq freq):
     if (!(miso.get_spi_id() == sck.get_spi_id() && sck.get_spi_id() == mosi.get_spi_id()))
     {
 throw Error(__FILE__, __LINE__, "An incorrect SPI pin number was entered");  // 正しくないSPIのピン番号が入力されました
-    } else if (Pin::Status.at(_miso.get_gpio()) != PinStatus::NoUse || Pin::Status.at(_sck.get_gpio()) != PinStatus::NoUse || Pin::Status.at(_mosi.get_gpio()) != PinStatus::NoUse || !cs.no_use())
-    {
+    } else if (Pin::Status.at(_miso.get_gpio()) != PinStatus::NoUse || Pin::Status.at(_sck.get_gpio()) != PinStatus::NoUse || Pin::Status.at(_mosi.get_gpio()) != PinStatus::NoUse || !cs.no_use()) {
 throw Error(__FILE__, __LINE__, "This pin is already in use");  // このピンは既に使用されています
-    } else if (SPI::IsUse[_spi_id])
-    {
+    } else if (SPI::IsUse[_spi_id]) {
 throw Error(__FILE__, __LINE__, "SPI cannot be reinitialized");  // SPIを再度初期化することはできません
     }
 

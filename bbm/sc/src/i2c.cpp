@@ -109,11 +109,9 @@ I2C::I2C(SDA sda, SCL scl, Freq freq):
     if (sda.get_i2c_id() != scl.get_i2c_id())
     {
 throw Error(__FILE__, __LINE__, "An incorrect I2C pin number was entered");  // 正しくないI2Cのピン番号が入力されました
-    } else if (!(Pin::Status.at(_sda.get_gpio()) == PinStatus::NoUse && Pin::Status.at(_scl.get_gpio()) == PinStatus::NoUse))
-    {
+    } else if (!(Pin::Status.at(_sda.get_gpio()) == PinStatus::NoUse && Pin::Status.at(_scl.get_gpio()) == PinStatus::NoUse)) {
 throw Error(__FILE__, __LINE__, "This pin is already in use");  // このピンは既に使用されています
-    } else if (I2C::IsUse[_i2c_id])
-    {
+    } else if (I2C::IsUse[_i2c_id]) {
 throw Error(__FILE__, __LINE__, "I2C cannot be reinitialized");  // I2Cを再度初期化することはできません
     }
 

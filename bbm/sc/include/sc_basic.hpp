@@ -110,21 +110,21 @@ inline void sleep(_ms time)
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す
 //! @param value 0かもしれない数
 //! @return 0ではない数
-template<typename T> inline T not0(T value) {return (value ? value : 1);}
+template<typename T> constexpr inline T not0(const T& value) {return (value ? value : 1);}
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す．floatバージョン
 //! @param value 0かもしれない数
-template<> inline float not0(float value) {return (value ? value : FLT_TRUE_MIN);}
+template<> constexpr inline float not0(const float& value) {return (value ? value : FLT_TRUE_MIN);}
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す．doubleバージョン
 //! @param value 0かもしれない数
 //! @return 0ではない数
-template<> inline double not0(double value) {return (value ? value : DBL_TRUE_MIN);}
+template<> constexpr inline double not0(const double& value) {return (value ? value : DBL_TRUE_MIN);}
 
 //! @brief ゼロ除算防止のため，0であるかを判定し0でない数を返す．long doubleバージョン
 //! @param value 0かもしれない数
 //! @return 0ではない数
-template<> inline long double not0(long double value) {return (value ? value : LDBL_TRUE_MIN);}
+template<> constexpr inline long double not0(const long double& value) {return (value ? value : LDBL_TRUE_MIN);}
 
 
 //! @brief コピーを禁止するための親クラス
