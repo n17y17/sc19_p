@@ -70,11 +70,9 @@ UART::UART(TX tx, RX rx, Freq freq):
     if (tx.get_uart_id() != rx.get_uart_id())
     {
 throw Error(__FILE__, __LINE__, "An incorrect UART pin number was entered");  // 正しくないUARTのピン番号が入力されました
-    } else if (!(Pin::Status.at(_tx.get_gpio()) == PinStatus::NoUse && Pin::Status.at(_rx.get_gpio()) == PinStatus::NoUse))
-    {
+    } else if (!(Pin::Status.at(_tx.get_gpio()) == PinStatus::NoUse && Pin::Status.at(_rx.get_gpio()) == PinStatus::NoUse)) {
 throw Error(__FILE__, __LINE__, "This pin is already in use");  // このピンは既に使用されています
-    } else if (UART::IsUse[_uart_id])
-    {
+    } else if (UART::IsUse[_uart_id]) {
 throw Error(__FILE__, __LINE__, "UART cannot be reinitialized");  // UARTを再度初期化することはできません
     }
 

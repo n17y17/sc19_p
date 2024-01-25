@@ -32,7 +32,8 @@ enum class PinStatus
     SpiSck,
     SpiMosi,
     UartTx,
-    UartRx
+    UartRx,
+    Pwm
 };
 
 //! @brief ピンのプルアップ・プルダウン
