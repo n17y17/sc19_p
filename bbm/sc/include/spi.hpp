@@ -178,7 +178,7 @@ public:
     using TX = MOSI;
     using RX = MISO;
 private:
-    static bool IsUse[2];  // 既にSPI0とSPI1を使用しているか
+    static inline bool IsUse[2] = {false, false};  // 既にSPI0とSPI1を使用しているか
 };
 
 }

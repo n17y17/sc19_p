@@ -86,12 +86,12 @@ public:
     Binary read() const;
 
 private:
-    static bool IsUse[2];  // 既にUART0とUART1を使用しているか
+    static inline bool IsUse[2] = {false, false};  // 既にUART0とUART1を使用しているか
     static constexpr size_t MaxInputLen = 100;  // 受信したデータを最大で何バイトまで保管しておくか
 
 public:
-    static std::deque<uint8_t> uart0_queue;
-    static std::deque<uint8_t> uart1_queue;
+    static inline std::deque<uint8_t> uart0_queue{MaxInputLen, 0};
+    static inline std::deque<uint8_t> uart1_queue{MaxInputLen, 0};
     static void uart0_handler();
     static void uart1_handler();
 };

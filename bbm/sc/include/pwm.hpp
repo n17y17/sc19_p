@@ -55,10 +55,10 @@ private:
     const Channel _channel;  // チャンネル (1つのスライスに2つのピンが対応しているため，そのどちらを指すかを識別する値)
     const uint16_t _wrap;  // 分解能 (詳しくは下記の資料へ)
     const float _clk_div;  // 分周比 (詳しくは下記の資料へ)
-    static inline const Freq MaxFreq = 125'000'000_hz;
-    static inline const Freq MinFreq = 8.0_hz;
-    static constexpr uint16_t MaxWrap = 0xffff;
-    static constexpr uint16_t MinWrap = 1;
+    static inline const Freq MaxFreq = 125'000'000_hz;  // PWMで扱える周波数の最大値
+    static inline const Freq MinFreq = 8.0_hz;  // PWMで扱える周波数の最小値
+    static constexpr uint16_t MaxWrap = 0xffff;  // PWMで扱えるWrapの最大値
+    static constexpr uint16_t MinWrap = 1;  // PWMで扱えるWrapの最小値
 
 public:
     //! @brief ピンの出力レベル(ピンの出力が1になっている割合)を設定

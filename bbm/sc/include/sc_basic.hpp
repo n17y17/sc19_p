@@ -127,6 +127,23 @@ template<> constexpr inline double not0(const double& value) {return (value ? va
 template<> constexpr inline long double not0(const long double& value) {return (value ? value : LDBL_TRUE_MIN);}
 
 
+
+//! @brief エラー防止のため，-0.0であるかを判定し+0.0を返す．floatバージョン
+//! @param value -0.0かもしれない数
+//! @return -0.0ではない数
+constexpr inline float not_minus0(const float& value) {return (value ? value : 0.0F);}
+
+//! @brief エラー防止のため，-0.0であるかを判定し+0.0を返す．doubleバージョン
+//! @param value -0.0かもしれない数
+//! @return -0.0ではない数
+constexpr inline double not_minus0(const double& value) {return (value ? value : 0.0);}
+
+//! @brief エラー防止のため，-0.0であるかを判定し+0.0を返す．long doubleバージョン
+//! @param value -0.0かもしれない数
+//! @return -0.0ではない数
+constexpr inline long double not_minus0(const long double& value) {return (value ? value : 0.0L);}
+
+
 //! @brief コピーを禁止するための親クラス
 class Noncopyable
 {

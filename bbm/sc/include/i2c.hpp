@@ -130,7 +130,7 @@ public:
     //! @return Binary型のバイト列
     Binary read_memory(size_t size, SlaveAddr slave_addr, MemoryAddr memory_addr) const;
 private:
-    static bool IsUse[2];  // 既にI2C0とI2C1を使用しているか
+    static inline bool IsUse[2] = {false, false};  // 既にI2C0とI2C1を使用しているか
 };
 
 }

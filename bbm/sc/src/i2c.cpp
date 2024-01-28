@@ -20,7 +20,7 @@ namespace sc
 SDA::SDA(int sda_gpio):
     Pin(sda_gpio)
 {
-    if (get_gpio() != all_of(EnableI2C0_SDA) && get_gpio() != all_of(EnableI2C1_SDA))
+    if (gpio() != all_of(EnableI2C0_SDA) && gpio() != all_of(EnableI2C1_SDA))
     {
 throw Error(__FILE__, __LINE__, "An incorrect SDA pin number was entered");  // 正しくないSDAピンの番号が入力されました
     }
@@ -28,10 +28,10 @@ throw Error(__FILE__, __LINE__, "An incorrect SDA pin number was entered");  // 
 
 I2C_ID SDA::get_i2c_id() const
 {
-    if (get_gpio() == any_of(EnableI2C0_SDA))
+    if (gpio() == any_of(EnableI2C0_SDA))
     {
 return I2C_ID::i2c_0;
-    } else if (get_gpio() == any_of(EnableI2C1_SDA)) {
+    } else if (gpio() == any_of(EnableI2C1_SDA)) {
 return I2C_ID::i2c_1;
     } else {
 throw Error(__FILE__, __LINE__, "An incorrect SDA pin number was entered");  // 正しくないSDAピンの番号が入力されました
@@ -43,7 +43,7 @@ throw Error(__FILE__, __LINE__, "An incorrect SDA pin number was entered");  // 
 SCL::SCL(int sda_gpio):
     Pin(sda_gpio)
 {
-    if (get_gpio() != all_of(EnableI2C0_SCL) && get_gpio() != all_of(EnableI2C1_SCL))
+    if (gpio() != all_of(EnableI2C0_SCL) && gpio() != all_of(EnableI2C1_SCL))
     {
 throw Error(__FILE__, __LINE__, "An incorrect SCL pin number was entered");  // 正しくないSCLピンの番号が入力されました
     }
@@ -51,10 +51,10 @@ throw Error(__FILE__, __LINE__, "An incorrect SCL pin number was entered");  // 
 
 I2C_ID SCL::get_i2c_id() const
 {
-    if (get_gpio() == any_of(EnableI2C0_SCL))
+    if (gpio() == any_of(EnableI2C0_SCL))
     {
 return I2C_ID::i2c_0;
-    } else if (get_gpio() == any_of(EnableI2C1_SCL)) {
+    } else if (gpio() == any_of(EnableI2C1_SCL)) {
 return I2C_ID::i2c_1;
     } else {
 throw Error(__FILE__, __LINE__, "An incorrect SCL pin number was entered");  // 正しくないSCLピンの番号が入力されました
@@ -109,23 +109,23 @@ I2C::I2C(SDA sda, SCL scl, Freq freq):
     if (sda.get_i2c_id() != scl.get_i2c_id())
     {
 throw Error(__FILE__, __LINE__, "An incorrect I2C pin number was entered");  // 正しくないI2Cのピン番号が入力されました
-    } else if (!(Pin::Status.at(_sda.get_gpio()) == PinStatus::NoUse && Pin::Status.at(_scl.get_gpio()) == PinStatus::NoUse)) {
+    } else if (!(Pin::Status.at(_sda.gpio()) == PinStatus::NoUse && Pin::Status.at(_scl.gpio()) == PinStatus::NoUse)) {
 throw Error(__FILE__, __LINE__, "This pin is already in use");  // このピンは既に使用されています
     } else if (I2C::IsUse[_i2c_id]) {
 throw Error(__FILE__, __LINE__, "I2C cannot be reinitialized");  // I2Cを再度初期化することはできません
     }
 
-    Pin::Status.at(_sda.get_gpio()) = PinStatus::I2cSda;
-    Pin::Status.at(_scl.get_gpio()) = PinStatus::I2cScl;
+    Pin::Status.at(_sda.gpio()) = PinStatus::I2cSda;
+    Pin::Status.at(_scl.gpio()) = PinStatus::I2cScl;
 
     I2C::IsUse[_i2c_id] = true;
 
     ::i2c_init((_i2c_id ? i2c1 : i2c0), static_cast<double>(_freq));  // pico-SDKの関数  I2Cを初期化する
 
-    ::gpio_set_function(_sda.get_gpio(), GPIO_FUNC_I2C);  // pico-SDKの関数  ピンの機能をI2Cモードにする
-    ::gpio_pull_up(_sda.get_gpio());  // pico-SDKの関数  プルアップ抵抗を有効にする
-    ::gpio_set_function(_scl.get_gpio(), GPIO_FUNC_I2C);  // pico-SDKの関数  ピンの機能をI2Cモードにする
-    ::gpio_pull_up(_scl.get_gpio());  // pico-SDKの関数  プルアップ抵抗を有効にする
+    ::gpio_set_function(_sda.gpio(), GPIO_FUNC_I2C);  // pico-SDKの関数  ピンの機能をI2Cモードにする
+    ::gpio_pull_up(_sda.gpio());  // pico-SDKの関数  プルアップ抵抗を有効にする
+    ::gpio_set_function(_scl.gpio(), GPIO_FUNC_I2C);  // pico-SDKの関数  ピンの機能をI2Cモードにする
+    ::gpio_pull_up(_scl.gpio());  // pico-SDKの関数  プルアップ抵抗を有効にする
 }
 
 void I2C::write(Binary output_data, SlaveAddr slave_addr) const
@@ -158,7 +158,5 @@ Binary I2C::read_memory(size_t size, SlaveAddr slave_addr, MemoryAddr memory_add
     input_data.resize(input_size);
     return Binary(input_data);
 }
-
-bool I2C::IsUse[2] = {false, false};
 
 }

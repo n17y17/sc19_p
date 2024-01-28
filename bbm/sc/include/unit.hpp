@@ -32,19 +32,6 @@ class _unit
     virtual operator double() const = 0;
 };
 
-//! @brief 無次元量
-class _pure : _unit
-{
-    const double _pure_value;
-public:
-    //! @brief 無次元量のセット
-    constexpr _pure(double pure_value):
-        _pure_value(pure_value) {}
-    
-    //! @brief 無次元量をdouble型に変換
-    operator double() const override {return _pure_value;}
-};
-
 //! @brief 光度(cd)
 class _cd : _unit
 {
@@ -75,7 +62,7 @@ public:
 };
 
 //! @brief 周波数(Hz)
-//! @note 正確な単位はHzですが，'_'の後に大文字を置くことができないためhzとしています
+//! @details 正確な単位はHzですが，'_'の後に大文字を置くことができないためhzとしています
 class _hz : _unit
 {
     const double _hz_value;
@@ -153,7 +140,7 @@ public:
 class _hPa;
 
 //! @brief 圧力(Pa)
-//! @note 正確な単位はPaですが，'_'の後に大文字を置くことができないためpaとしています
+//! @details 正確な単位はPaですが，'_'の後に大文字を置くことができないためpaとしています
 class _pa : _unit
 {
     const double _pa_value;
@@ -204,15 +191,15 @@ public:
 class _deg;
 
 //! @brief 角度(rad)
+//! @note 比較演算子やdoubleへのキャストをした際は，0~2π の数値に直して扱います
 class _rad : _unit
 {
-    const double _rad_value;
+    const double _rad_value;  // ラジアン単位の値です 0 ~ 2π
 public:
     //! @brief 角度(rad)のセット
-    constexpr explicit _rad(double rad_value):
-        _rad_value(rad_value) {}
+    explicit _rad(double rad_value);
     
-    //! @brief 角度(rad)をdouble型に変換
+    //! @brief 角度(rad)をdouble型に変換  0 ~ 2π
     explicit operator double() const noexcept override {return _rad_value;}
 
     //! @brief 角度(rad)をdegに変換
@@ -220,19 +207,19 @@ public:
 };
 
 //! @brief 角度(°)
+//! @note 比較演算子やdoubleへのキャストをした際は，0~360 の数値に直して扱います
 class _deg : _unit
 {
-    const double _deg_value;
+    const double _deg_value;  // ° 単位の値です 0° ~ 360°
 public:
     //! @brief 角度(°)のセット
-    constexpr explicit _deg(double deg_value):
-        _deg_value(deg_value) {}
+    explicit _deg(double deg_value);
     
     //! @brief 度分秒での角度(°)のセット
     constexpr _deg(double deg, double min, double s = 0.0):
         _deg_value(deg + (min / 60.0) + (s / 60.0 / 60.0)) {}
     
-    //! @brief 角度(°)をdouble型に変換
+    //! @brief 角度(°)をdouble型に変換  0° ~ 360°
     explicit operator double() const noexcept override {return _deg_value;}
 
     //! @brief 角度(°)をradに変換
@@ -392,6 +379,33 @@ public:
 };
 
 
+/****** 型の別名など *****/
+
+//! @brief 角度(_radと_deg)以外の単位型
+template<class Unit> 
+using NonAngularUnit_t =
+    typename std::enable_if<
+        std::conjunction<
+            std::is_base_of<_unit, Unit>,
+            std::negation<
+                std::disjunction<
+                    std::is_same<_rad, Unit>, 
+                    std::is_same<_deg, Unit> 
+                > 
+            > 
+        >::value, 
+        Unit
+    >::type;
+
+//! @brief いずれかの単位型
+template<class Unit>
+using AnyUnit_t = 
+    typename std::enable_if<
+        std::is_base_of<_unit, Unit>::value,
+        Unit
+    >::type;
+
+
 /***** 単位同士の計算や比較 *****/
 
 //! @brief 単位同士の比較
@@ -431,48 +445,61 @@ auto operator!= (const Unit& left_param, const Unit2& right_param) -> typename s
     return static_cast<double>(left_param) != static_cast<double>(static_cast<Unit>(right_param));
 }
 
-//! @brief 単位同士の演算
+//! @brief 単位を含む演算
+template<class Unit>
+auto operator+ (const Unit& param) -> typename std::enable_if<std::is_base_of<_unit, Unit>::value, Unit>::type
+{
+    return param;
+}
+//! @brief 単位を含む演算
+template<class Unit>
+auto operator- (const Unit& param) -> typename std::enable_if<std::is_base_of<_unit, Unit>::value, Unit>::type
+{
+    return Unit(-1.0 * static_cast<double>(param));
+}
+//! @brief 単位を含む演算
 template<class Unit, class Unit2>
 auto operator+ (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
 {
     return Unit(static_cast<double>(left_param) + static_cast<double>(static_cast<Unit>(right_param)));
 }
-//! @brief 単位同士の演算
+//! @brief 単位を含む演算
 template<class Unit, class Unit2>
 auto operator- (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
 {
     return Unit(static_cast<double>(left_param) - static_cast<double>(static_cast<Unit>(right_param)));
 }
-//! @brief 単位同士の演算
-template<class Unit, class Unit2>
-auto operator* (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
+//! @brief 単位を含む演算
+template<class Unit, class T>
+auto operator* (const Unit& left_param, const T& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_arithmetic<T>>::value, Unit>::type
 {
-    return Unit(static_cast<double>(left_param) * static_cast<double>(static_cast<Unit>(right_param)));
+    return Unit(static_cast<double>(left_param) * right_param);
 }
-//! @brief 単位同士の演算
-template<class Unit, class Unit2>
-auto operator/ (const Unit& left_param, const Unit2& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, Unit>::type
+//! @brief 単位を含む演算
+template<class T, class Unit>
+auto operator* (const T& left_param, const Unit& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_arithmetic<T>>::value, Unit>::type
 {
-    static_assert(std::conjunction<std::is_base_of<_unit, Unit>,std::is_base_of<_unit, Unit2>>::value, u"\n\n<<error!>> \nYou cannot perform operations on values of unit type and non-unit type. \n\x92\x50\x88\xca\x8c\x5e\x82\xc6\x94\xf1\x92\x50\x88\xca\x8c\x5e\x82\xcc\x92\x6c\x82\xc5\x89\x89\x8e\x5a\x82\xb7\x82\xe9\x82\xb1\x82\xc6\x82\xcd\x82\xc5\x82\xab\x82\xdc\x82\xb9\x82\xf1\n\n");  // 単位型と非単位型の値で演算することはできません．
-    return Unit(static_cast<double>(left_param) / [](double d){return (d ? d : DBL_TRUE_MIN);}(static_cast<double>(static_cast<Unit>(right_param))));  // ゼロ除算を防止している
+    return Unit(left_param * static_cast<double>(right_param));
+}
+//! @brief 単位を含む演算
+template<class Unit, class T>
+auto operator/ (const Unit& left_param, const T& right_param) -> typename std::enable_if<std::conjunction<std::is_base_of<_unit, Unit>,std::is_arithmetic<T>>::value, Unit>::type
+{
+    return Unit(static_cast<double>(left_param) / not0(right_param));  // ゼロ除算を防止している
 }
 
 /***** 特殊な演算 *****/
 
 //! @brief Hzとsの演算
-inline _hz operator/ (_pure dimensionless, _s second)
+inline _hz operator/ (double dimensionless, _s second)
 {
-    return _hz(static_cast<double>(dimensionless) / static_cast<double>(second));
+    return _hz(dimensionless / static_cast<double>(second));
 }
 
 }
 
 
 /***** ユーザー定義リテラル *****/
-
-//! @brief 無次元量
-inline sc::_pure operator"" _pure(const char* m_chars) {return sc::_pure(std::stod(m_chars, nullptr));}
-inline sc::_pure operator"" _pure(long double m_value) {return sc::_pure(m_value);}
 
 //! @brief 光度(cd)
 inline sc::_cd operator"" _cd(const char* cd_chars) {return sc::_cd(std::stod(cd_chars, nullptr));}
@@ -504,6 +531,9 @@ inline sc::_px operator"" _px(const char* px_chars) {return sc::_px(std::stod(px
 //! @brief 角度(rad)
 inline sc::_rad operator"" _rad(const char* rad_chars) {return sc::_rad(std::stod(rad_chars, nullptr));}
 
+//! @brief 角度(rad)．数値×π (rad)
+inline sc::_rad operator"" _pi_rad(const char* rad_chars) {return sc::_rad(M_PI * std::stod(rad_chars, nullptr));}
+
 //! @brief 角度(°)
 inline sc::_deg operator"" _deg(const char* deg_chars) {return sc::_deg(std::stod(deg_chars, nullptr));}
 
@@ -527,5 +557,7 @@ inline sc::_min operator"" _min(const char* min_chars) {return sc::_min(std::sto
 
 //! @brief 磁束密度(mT)
 inline sc::_mT operator"" _mT(const char* mT_chars) {return sc::_mT(std::stod(mT_chars, nullptr));}
+
+
 
 #endif  // SC19_PICO_SC_UNIT_HPP_
