@@ -68,12 +68,12 @@ public:
     //! @param array_ptr 配列
     //! @param size 配列の長さ
     template<class UINT8>
-    Binary(const UINT8* array_ptr, size_t size):
+    Binary(const UINT8* array_ptr, std::size_t size):
         _binary_data(array_ptr, array_ptr + size) {}
 
     //! @brief バイト列のサイズを返す
     //! @return バイト列のサイズ
-    size_t size() const;
+    std::size_t size() const;
 
     //! @brief バイト列のindex番目の値を返す
     //! @param index 先頭から何番目か．先頭は0

@@ -121,7 +121,7 @@ SPI::MemoryAddr::operator uint8_t() const
 SPI::SPI(MISO miso, CS cs, SCK sck, MOSI mosi):
     SPI(miso, cs, sck, mosi, 10'000_hz) {}
 
-SPI::SPI(MISO miso, CS cs, SCK sck, MOSI mosi, Freq freq):
+SPI::SPI(MISO miso, CS cs, SCK sck, MOSI mosi, Frequency<Unit::Hz>  freq):
     _miso(miso), _sck(sck), _mosi(mosi), _freq(freq), _spi_id(miso.get_spi_id())
 {
     if (!(miso.get_spi_id() == sck.get_spi_id() && sck.get_spi_id() == mosi.get_spi_id()))
@@ -166,14 +166,14 @@ throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the
     _cs_pins.at(cs_pin.get().at(0)).write(1);  // 通信先のデバイスにつながるCSピンをオンにして，通信の終了を伝える
 }
 
-Binary SPI::read(size_t size, CS cs_pin) const
+Binary SPI::read(std::size_t size, CS cs_pin) const
 {
     if (cs_pin.size() > 1)
     {
 throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the same time");  // 複数のデバイスと同時に通信することはできません
     }
     std::vector<uint8_t> input_data(size);
-    size_t input_size = 0;  // 実際には何バイト受信したか
+    std::size_t input_size = 0;  // 実際には何バイト受信したか
     _cs_pins.at(cs_pin.get().at(0)).write(0);  // 通信先のデバイスにつながるCSピンをオフにして，通信の開始を伝える
     input_size = ::spi_read_blocking((_spi_id ? spi1 : spi0), 0, input_data.data(), size);  // pico-SDKの関数  SPIで受信
     _cs_pins.at(cs_pin.get().at(0)).write(1);  // 通信先のデバイスにつながるCSピンをオンにして，通信の終了を伝える
@@ -193,7 +193,7 @@ throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the
     _cs_pins.at(cs_pin.get().at(0)).write(1);  // 通信先のデバイスにつながるCSピンをオンにして，通信の終了を伝える
 }
 
-Binary SPI::read_memory(size_t size, CS cs_pin, MemoryAddr memory_addr) const
+Binary SPI::read_memory(std::size_t size, CS cs_pin, MemoryAddr memory_addr) const
 {
     if (cs_pin.size() > 1)
     {
@@ -201,7 +201,7 @@ throw Error(__FILE__, __LINE__, "Cannot communicate with multiple devices at the
     }
     std::vector<uint8_t> input_data(size);
     uint8_t write_memory_addr = memory_addr | 0b10000000;
-    size_t input_size = 0;  // 実際には何バイト受信したか
+    std::size_t input_size = 0;  // 実際には何バイト受信したか
     _cs_pins.at(cs_pin.get().at(0)).write(0);  // 通信先のデバイスにつながるCSピンをオフにして，通信の開始を伝える
     ::spi_write_blocking((_spi_id ? spi1 : spi0), &write_memory_addr, 1);  // まず，メモリアドレスを送信
     input_size = ::spi_read_blocking((_spi_id ? spi1 : spi0), 0, input_data.data(), size);  // pico-SDKの関数  SPIで受信

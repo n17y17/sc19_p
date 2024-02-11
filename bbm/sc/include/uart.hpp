@@ -67,7 +67,7 @@ class UART
 private:
     const TX _tx;  // UARTで使用するTXピン
     const RX _rx;  // UARTで使用するRXピン
-    const Freq _freq;  // UARTの通信速度
+    const Frequency<Unit::Hz>  _freq;  // UARTの通信速度
     const UART_ID _uart_id;  // UART0かUART1か
 
 public:
@@ -75,7 +75,7 @@ public:
     //! @param tx UARTで使用するTXピン
     //! @param rx UARTで使用するRXピン
     //! @param freq UARTの通信速度 (10000_hz のように入力)
-    UART(TX tx, RX rx, Freq freq);
+    UART(TX tx, RX rx, Frequency<Unit::Hz>  freq);
 
     //! @brief UARTによる送信
     //! @param output_data 送信するデータ
@@ -87,7 +87,7 @@ public:
 
 private:
     static inline bool IsUse[2] = {false, false};  // 既にUART0とUART1を使用しているか
-    static constexpr size_t MaxInputLen = 100;  // 受信したデータを最大で何バイトまで保管しておくか
+    static constexpr std::size_t MaxInputLen = 100;  // 受信したデータを最大で何バイトまで保管しておくか
 
 public:
     static inline std::deque<uint8_t> uart0_queue{MaxInputLen, 0};

@@ -64,7 +64,7 @@ throw Error(__FILE__, __LINE__, "An incorrect RX pin number was entered");  // æ
 
 
 
-UART::UART(TX tx, RX rx, Freq freq):
+UART::UART(TX tx, RX rx, Frequency<Unit::Hz>  freq):
     _tx(tx), _rx(rx), _freq(freq), _uart_id(tx.get_uart_id())
 {
     if (tx.get_uart_id() != rx.get_uart_id())

@@ -103,7 +103,7 @@ I2C::MemoryAddr::operator uint8_t() const
 I2C::I2C(SDA sda, SCL scl):
     I2C(sda, scl, 10'000_hz) {}
 
-I2C::I2C(SDA sda, SCL scl, Freq freq):
+I2C::I2C(SDA sda, SCL scl, Frequency<Unit::Hz> freq):
     _sda(sda), _scl(scl), _freq(freq), _i2c_id(sda.get_i2c_id())
 {
     if (sda.get_i2c_id() != scl.get_i2c_id())
@@ -133,10 +133,10 @@ void I2C::write(Binary output_data, SlaveAddr slave_addr) const
     ::i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr, output_data, output_data.size(), false);  // pico-SDKの関数  I2Cで送信
 }
 
-Binary I2C::read(size_t size, SlaveAddr slave_addr) const
+Binary I2C::read(std::size_t size, SlaveAddr slave_addr) const
 {
     std::vector<uint8_t> input_data(size);
-    size_t input_size = 0;  // 実際には何バイト受信したか
+    std::size_t input_size = 0;  // 実際には何バイト受信したか
     input_size = ::i2c_read_blocking((_i2c_id ? i2c1 : i2c0), slave_addr, input_data.data(), size, false);  // pico-SDKの関数  I2Cで受信
     input_data.resize(input_size);
     return Binary(input_data);
@@ -148,10 +148,10 @@ void I2C::write_memory(Binary output_data, SlaveAddr slave_addr, MemoryAddr memo
     ::i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr, corrected_data, corrected_data.size(), false);  // pico-SDKの関数  I2Cで送信
 }
 
-Binary I2C::read_memory(size_t size, SlaveAddr slave_addr, MemoryAddr memory_addr) const
+Binary I2C::read_memory(std::size_t size, SlaveAddr slave_addr, MemoryAddr memory_addr) const
 {
     std::vector<uint8_t> input_data(size);
-    size_t input_size = 0;  // 実際には何バイト受信したか
+    std::size_t input_size = 0;  // 実際には何バイト受信したか
     uint8_t output_data = memory_addr;
     ::i2c_write_blocking((_i2c_id ? i2c1 : i2c0), slave_addr, &output_data, 1, true);  // まず，メモリアドレスを送信
     input_size = ::i2c_read_blocking((_i2c_id ? i2c1 : i2c0), slave_addr, input_data.data(), size, false);  // pico-SDKの関数  I2Cで受信
