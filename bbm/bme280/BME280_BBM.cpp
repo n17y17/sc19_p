@@ -12,26 +12,26 @@ BME280::BME280(){
     gpio_pull_up(I2C_SCL);
 }
 
-//main()入れただけで何もわかってない(init_hwはいらなそうだからコメントアウトした)
-int BME280::get_BME280(){
-    struct bme280_dev dev;
-    struct bme280_data sensor_data;
-    int8_t rslt;
-    uint32_t delay;               // calculated delay between measurements
-    // init_hw();
-    rslt = init_sensor(&dev,&delay);
-    if (rslt != BME280_OK) {
-      printf("could not initialize sensor. RC: %d\n", rslt);
-    }
-    else {
-      printf("Temperature, Pressure, Humidity\n");
-      if (read_sensor(&dev,&delay,&sensor_data) == BME280_OK) {
-        print_data(&sensor_data);
-        sleep_ms(1000*UPDATE_INTERVAL);//UPDATE_INTERVALはCMakeListにあるよ
-      }
-      else{
-      throw Error(__FILE__, __LINE__, "The value could not be read properly.");  // 正常に値が読み取れませんでした
-    }
-    }
-}
+// //main()入れただけで何もわかってない(init_hwはいらなそうだからコメントアウトした)
+// int BME280::get_BME280(){
+//     struct bme280_dev dev;
+//     struct bme280_data sensor_data;
+//     int8_t rslt;
+//     uint32_t delay;               // calculated delay between measurements
+//     // init_hw();
+//     rslt = init_sensor(&dev,&delay);
+//     if (rslt != BME280_OK) {
+//       printf("could not initialize sensor. RC: %d\n", rslt);
+//     }
+//     else {
+//       printf("Temperature, Pressure, Humidity\n");
+//       if (read_sensor(&dev,&delay,&sensor_data) == BME280_OK) {
+//         print_data(&sensor_data);
+//         sleep_ms(1000*UPDATE_INTERVAL);//UPDATE_INTERVALはCMakeListにあるよ
+//       }
+//       else{
+//       throw Error(__FILE__, __LINE__, "The value could not be read properly.");  // 正常に値が読み取れませんでした
+//     }
+//     }
+// }
 
