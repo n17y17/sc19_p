@@ -78,7 +78,7 @@ public:
 
     //! @brief 次元を持った量を構築
     explicit constexpr Dimension(const double& num):
-        Dimension(num * Dimension<T,L,M,I,Th,N,J>{}) {}
+        _number(num) {}
     
     explicit constexpr operator double() const
         {return _number;}
@@ -126,13 +126,13 @@ Dimension<T, L, M, I, Th, N, J> constexpr operator-(const Dimension<T, L, M, I, 
 }
 
 template<int T, int L, int M, int I, int Th, int N, int J>
-Dimension<T, L, M, I, Th, N, J> constexpr operator*(const Dimension<T, L, M, I, Th, N, J>& scalar1, double scalar2)
+Dimension<T, L, M, I, Th, N, J> constexpr operator*(const Dimension<T, L, M, I, Th, N, J>& scalar1, const double& scalar2)
 {
     return Dimension<T, L, M, I, Th, N, J>{static_cast<double>(scalar1) * scalar2};
 }
 
 template<int T, int L, int M, int I, int Th, int N, int J>
-Dimension<T, L, M, I, Th, N, J> constexpr operator*(double scalar1, const Dimension<T, L, M, I, Th, N, J>& scalar2)
+Dimension<T, L, M, I, Th, N, J> constexpr operator*(const double& scalar1, const Dimension<T, L, M, I, Th, N, J>& scalar2)
 {
     return Dimension<T, L, M, I, Th, N, J>{scalar1 * static_cast<double>(scalar2)};
 }
@@ -144,13 +144,13 @@ Dimension<T1+T2, L1+L2, M1+M2, I1+I2, Th1+Th2, N1+N2, J1+J2> constexpr operator*
 }
 
 template<int T, int L, int M, int I, int Th, int N, int J>
-Dimension<T, L, M, I, Th, N, J> constexpr operator/(const Dimension<T, L, M, I, Th, N, J>& scalar1, double scalar2)
+Dimension<T, L, M, I, Th, N, J> constexpr operator/(const Dimension<T, L, M, I, Th, N, J>& scalar1, const double& scalar2)
 {
     return Dimension<T, L, M, I, Th, N, J>{static_cast<double>(scalar1) / scalar2};
 }
 
 template<int T, int L, int M, int I, int Th, int N, int J>
-Dimension<-T, -L, -M, -I, -Th, -N, -J> constexpr operator/(double scalar1, const Dimension<T, L, M, I, Th, N, J>& scalar2)
+Dimension<-T, -L, -M, -I, -Th, -N, -J> constexpr operator/(const double& scalar1, const Dimension<T, L, M, I, Th, N, J>& scalar2)
 {
     return Dimension<-T, -L, -M, -I, -Th, -N, -J>{scalar1 / static_cast<double>(scalar2)};
 }
