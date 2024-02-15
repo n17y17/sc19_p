@@ -11,7 +11,6 @@ target_sources(SC PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/src/pin.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/pwm.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/sc_basic.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/src/sd.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/spi_slave.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/spi.cpp
     ${CMAKE_CURRENT_LIST_DIR}/src/uart.cpp

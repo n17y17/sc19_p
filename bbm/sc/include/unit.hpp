@@ -610,6 +610,121 @@ public:
 };
 
 
+template<Unit> class Altitude;  // 標高
+template<class T> Altitude(const T& t) -> Altitude<Unit::m>;  // デフォルトをmにする
+
+//! @brief 標高(m)
+template<>
+class Altitude<Unit::m> : public dimension::m
+{
+public:
+    //! @brief 標高(m)
+    explicit constexpr Altitude(const double& num):
+        dimension::m(num) {}
+
+    //! @brief 標高(m)
+    constexpr Altitude(const dimension::m& num):
+        dimension::m(num) {}
+
+    //! @brief 標高(m)をdoubleに変換
+    explicit constexpr operator double() const
+        {return number();}
+};
+
+
+template<Unit> class Latitude;  // 緯度
+template<class T> Latitude(const T& t) -> Latitude<Unit::rad>;  // デフォルトをradにする
+
+//! @brief 緯度(rad)
+template<>
+class Latitude<Unit::rad> : public dimension::rad
+{
+public:
+    //! @brief 緯度(rad)
+    explicit constexpr Latitude(const double& num):
+        dimension::rad(num) {}
+
+    //! @brief 緯度(rad)
+    constexpr Latitude(const dimension::rad& num):
+        dimension::rad(num) {}
+
+    //! @brief 緯度(rad)をdoubleに変換
+    explicit constexpr operator double() const
+        {return number();}
+};
+
+// 緯度(deg)
+template<>
+class Latitude<Unit::deg> : public Latitude<Unit::rad> 
+{
+    //! @brief 緯度(deg)を緯度(rad)に変換
+    static constexpr double deg_to_rad(const double& num)
+        {return num * PI / 180.0;}
+
+    //! @brief 緯度(rad)を緯度(deg)に変換
+    static constexpr double rad_to_deg(const double& num)
+        {return num * 180.0 / PI;}
+public:
+    //! @brief 緯度(deg)
+    explicit constexpr Latitude(const double& num):
+        Latitude<Unit::rad>(deg_to_rad(num)) {}
+
+    //! @brief 緯度(deg)
+    constexpr Latitude(const Latitude<Unit::rad>& time):
+        Latitude<Unit::rad>(time) {}
+    
+    //! @brief 緯度(rad)をdoubleに変換
+    explicit constexpr operator double() const
+        {return rad_to_deg(number());}
+};
+
+
+template<Unit> class Longitude;  // 経度
+template<class T> Longitude(const T& t) -> Longitude<Unit::rad>;  // デフォルトをradにする
+
+//! @brief 経度(rad)
+template<>
+class Longitude<Unit::rad> : public dimension::rad
+{
+public:
+    //! @brief 経度(rad)
+    explicit constexpr Longitude(const double& num):
+        dimension::rad(num) {}
+
+    //! @brief 経度(rad)
+    constexpr Longitude(const dimension::rad& num):
+        dimension::rad(num) {}
+
+    //! @brief 経度(rad)をdoubleに変換
+    explicit constexpr operator double() const
+        {return number();}
+};
+
+// 経度(deg)
+template<>
+class Longitude<Unit::deg> : public Longitude<Unit::rad> 
+{
+    //! @brief 経度(deg)を経度(rad)に変換
+    static constexpr double deg_to_rad(const double& num)
+        {return num * PI / 180.0;}
+
+    //! @brief 経度(rad)を経度(deg)に変換
+    static constexpr double rad_to_deg(const double& num)
+        {return num * 180.0 / PI;}
+public:
+    //! @brief 経度(deg)
+    explicit constexpr Longitude(const double& num):
+        Longitude<Unit::rad>(deg_to_rad(num)) {}
+
+    //! @brief 経度(deg)
+    constexpr Longitude(const Longitude<Unit::rad>& time):
+        Longitude<Unit::rad>(time) {}
+    
+    //! @brief 経度(rad)をdoubleに変換
+    explicit constexpr operator double() const
+        {return rad_to_deg(number());}
+};
+
 }
 
 
