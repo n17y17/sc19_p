@@ -2,7 +2,7 @@ add_subdirectory(FatFs_SPI build)
 
 # ビルドを実行するファイルを追加
 add_library(SD STATIC
-    ${CMAKE_CURRENT_LIST_DIR}/simple_example.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/sd.cpp
     ${CMAKE_CURRENT_LIST_DIR}/hw_config.c
 )
 # 以下の資料を参考にしました
@@ -13,6 +13,7 @@ add_library(SD STATIC
 target_link_libraries(SD
     pico_stdlib
     FatFs_SPI
+    SC
 )
 
 

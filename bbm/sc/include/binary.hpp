@@ -71,6 +71,10 @@ public:
     Binary(const UINT8* array_ptr, std::size_t size):
         _binary_data(array_ptr, array_ptr + size) {}
 
+    //! @brief 1バイトの値からバイト列を作成
+    Binary(const uint8_t& bite_data):
+        _binary_data({bite_data}) {}
+
     //! @brief バイト列のサイズを返す
     //! @return バイト列のサイズ
     std::size_t size() const;
@@ -102,9 +106,16 @@ public:
     //! @brief uint8_t型の配列に変換
     //! @note 末尾に'\0'が付加されます．このポインタを通して値を変更した場合の動作は未定義です．
     operator const uint8_t*() const;
+
+    //! @brief データの先頭へのアドレスを返す
+    //! @note 末尾に'\0'が付加されます．このポインタを通して値を変更した場合の動作は未定義です．
+    const uint8_t* operator&() const;
     
     //! @brief バイナリデータを結合
     Binary operator+ (Binary other_binary) const;
+
+    //! @brief 配列の先頭へのポインタにデータを代入
+    void to_assign(uint8_t* reg_ptr) const;
 };
 
 //! @brief バイナリデータの先頭に1バイト追加
