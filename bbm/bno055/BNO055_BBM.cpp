@@ -12,21 +12,37 @@ namespace sc
 
 // void accel_init(void);
 static int addr = 0x28;
-//加速度
-// uint8_t accel[6]; // Store data from the 6 acceleration registers
-int16_t accelX, accelY, accelZ; // Combined 3 axis data
-float f_accelX, f_accelY, f_accelZ; // Float type of acceleration data
-uint8_t accel_val = 0x08; // Start register address
+
+// //全加速度
+// // uint8_t accel[6]; // Store data from the 6 acceleration registers
+// int16_t accelX, accelY, accelZ; // Combined 3 axis data
+// float f_accelX, f_accelY, f_accelZ; // Float type of acceleration data
+// uint8_t accel_val = 0x08; // Start register address
+
 //磁気
 // uint8_t mag[6];   // magnetometer registers
 int16_t magX, magY, magZ;
 float f_magX, f_magY, f_magZ;
 uint8_t mag_val = 0x0E;
+
 //ジャイロセンサ
 // uint8_t gyro[6];
 int16_t gyroX, gyroY, gyroZ;
 float f_gyroX, f_gyroY, f_gyroZ;
 uint8_t gyro_val = 0x14;
+
+//重力加速度
+// uint8_t grv[6];
+int16_t grvX, grvY, grvZ;
+float f_grvX, f_grvY, f_grvZ;
+uint8_t grv_val = 0x2E; //GRV_DATA_X_LSB 0x2E
+
+//線形加速度
+// uint8_t accel[6];
+int16_t accelX, accelY, accelZ;
+float f_accelX, f_accelY, f_accelZ;
+uint8_t accel_val = 0x28; //LIA_DATA_X_LSB 0x28  
+
 //ここまで
 
 
@@ -44,14 +60,12 @@ BNO055::BNO055(const I2C& i2c):
     // gpio_pull_up(7);
 
     // Call accelerometer initialisation function
-    printf("0\n");
     accel_init();
 
 }
 
-int BNO055::get_BNO055()
-{
-    //加速度を読み取る
+std::tuple<Acceleration<Unit::m_s2>,Acceleration<Unit::m_s2>,MagneticFluxDensity<Unit::T>,AngularVelocity<Unit::rad_s>> BNO055::read(){
+    //線形加速度を読み取る
     // i2c_write_blocking(I2C_PORT, addr, &accel_val, 1, true);
     // i2c_read_blocking(I2C_PORT, addr, accel, 6, false);
     Binary accel = _i2c.read_memory(size_t(6), SlaveAddr(addr), MemoryAddr(accel_val));
@@ -63,6 +77,23 @@ int BNO055::get_BNO055()
     f_accelX = accelX / 100.00;
     f_accelY = accelY / 100.00;
     f_accelZ = accelZ / 100.00;
+
+    Acceleration<Unit::m_s2>accel_vector{dimension::m_s2(f_accelX),dimension::m_s2(f_accelY),dimension::m_s2(f_accelZ)};
+
+    //重力加速度
+    // i2c_write_blocking(I2C_PORT, addr, &grv_val, 1, true);
+    // i2c_read_blocking(I2C_PORT, addr, grv, 6, false);
+    Binary grv = _i2c.read_memory(size_t(6), SlaveAddr(addr), MemoryAddr(grv_val));
+
+    grvX = ((grv[1]<<8) | grv[0]);
+    grvY = ((grv[3]<<8) | grv[2]);
+    grvZ = ((grv[5]<<8) | grv[4]);
+
+    f_grvX = grvX / 100.00;
+    f_grvY = grvY / 100.00;
+    f_grvZ = grvZ / 100.00;
+
+    Acceleration<Unit::m_s2>grav_vector{dimension::m_s2(f_grvX),dimension::m_s2(f_grvY),dimension::m_s2(f_grvZ)};
 
     //地磁気
     // i2c_write_blocking(I2C_PORT, addr, &mag_val, 1, true);
@@ -77,6 +108,8 @@ int BNO055::get_BNO055()
     f_magY = magY / 16.00;
     f_magZ = magZ / 16.00;
     
+    MagneticFluxDensity<Unit::T>Mag_vector{dimension::T(f_magX),dimension::T(f_magY),dimension::T(f_magZ)};
+    
     //ジャイロ
     // i2c_write_blocking(I2C_PORT, addr, &gyro_val, 1, true);
     // i2c_read_blocking(I2C_PORT, addr, gyro, 6, false);
@@ -89,6 +122,10 @@ int BNO055::get_BNO055()
     f_gyroX = gyroX / 900.00;
     f_gyroY = gyroY / 900.00;
     f_gyroZ = gyroZ / 900.00;
+
+    AngularVelocity<Unit::rad_s>gyro_vector{dimension::rad_s(f_gyroX),dimension::rad_s(f_gyroY),dimension::rad_s(f_gyroZ)};
+
+    return std::tuple<Acceleration<Unit::m_s2>,Acceleration<Unit::m_s2>,MagneticFluxDensity<Unit::T>,AngularVelocity<Unit::rad_s>> {accel_vector,grav_vector,Mag_vector,gyro_vector};
 }
 
 
@@ -96,27 +133,18 @@ int BNO055::get_BNO055()
 
 // Initialise Accelerometer Function
 void BNO055::accel_init(void){
-    printf("1\n");
-
     // Check to see if connection is correct
     sleep_ms(1000); // Add a short delay to help BNO005 boot up
     uint8_t reg = 0x00;
     uint8_t chipID[1];
-    // i2c_write_blocking(I2C_PORT, addr, &reg, 1, true);
-    // i2c_read_blocking(I2C_PORT, addr, chipID, 1, false);
+    // i2c_write_blocking(i2c1, addr, &reg, 1, true);
+    // i2c_read_blocking(i2c1, addr, chipID, 1, false);
     chipID[0] = _i2c.read_memory(size_t(1), SlaveAddr(addr), MemoryAddr(reg)).at(0);
-    printf("ID:%d...\n", int(chipID[0]));
-
-    printf("2\n");
-
 
 //while文を削除した
     if(chipID[0] != 0xA0){
             printf("Chip ID Not Correct - Check Connection!");
     }
-        
-    printf("3\n");
-
 
     // Use internal oscillator
     uint8_t data[2];
@@ -124,10 +152,6 @@ void BNO055::accel_init(void){
     data[1] = 0x40;
     // i2c_write_blocking(I2C_PORT, addr, data, 2, true);
     _i2c.write_memory(Binary(data[1]), SlaveAddr(addr), MemoryAddr(data[0]));
-
-        
-    printf("4\n");
-
 
     // Reset all interrupt status bits
     data[0] = 0x3F;
@@ -163,14 +187,10 @@ void BNO055::accel_init(void){
 
     // Set operation to AMG(Accel Mag Gyro)
     data[0] = 0x3D;
-    data[1] = 0b0111;
+    data[1] = 0b1100;
     // i2c_write_blocking(I2C_PORT, addr, data, 2, true);
     _i2c.write_memory(Binary(data[1]), SlaveAddr(addr), MemoryAddr(data[0]));
     sleep_ms(100);
-
-        
-    printf("5\n");
-
 }
 
 }
