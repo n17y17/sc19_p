@@ -15,7 +15,9 @@ namespace sc
 
 void Motor1::run(float speed) const
 {
+    printf("speed:%f\n", speed);
     if (speed < -1.0F || +1.0F < speed) throw Error(__FILE__, __LINE__, "The motor output is a number between 0 and 1. However, %d was entered.", speed);  // スピードが0未満または1以上ならエラー
+    printf("non error\n");
 
     if (speed >= 0.0F)
     {
@@ -25,7 +27,7 @@ void Motor1::run(float speed) const
     } else {
         // 逆回転するとき
         _in1_pwm.write(0.0F);
-        _in2_pwm.write(speed);
+        _in2_pwm.write(-speed);
     }
 }
 
