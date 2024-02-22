@@ -3,162 +3,184 @@
 namespace sc
 {
 
+static uint8_t exit_pin_gpio_num = 16;  // 強制終了させるためのピン番号
+void exit_callback(uint, uint32_t);  // 強制終了させるための関数
 
 int main()
 {
-try
-{
-/***** setup *****/
-    // printf("0");
-    // UART uart_twelite(TX(0), RX(1), 115200_hz);  // TWELITEとの通信を行うUART
-    // printf("1");
-    // GPIO<In> yobi_spresense(Pin(2));  // Spresenseとの通信を行う予備のピン
-    // printf("2");
-    // GPIO<Out> yobi_twelite(Pin(3));  // TWELITEに出力する予備の通信ピン
-    // printf("3");
-    // // UART uart_spresense(TX(4), RX(5), 115200_hz);  // Spresenseとの通信を行うUART
-    // printf("4");
-    // I2C i2c_bme_bno(SDA(6), SCL(7));  // BMEとBNOからの受信を行うI2C
-    // printf("5");
-    // LED led_green(Pin(8));  // 照度センサ搭載の緑色LED
-    // printf("6");
-    // // GPIO 9 はSDカード
-    // Motor1 motor_left(PWM(11), PWM(10));  // 左のモーター
-    // printf("7");
-    // // GPIO 12~15 はSDカード
-    // // GPIO16は未使用
-    // GPIO<In> para_separate(Pin(17), Pull::Up);  // パラシュート分離の検知用ピン (分離したらHigh)
-    // printf("8");
-    // // GPIO18は未使用
-    // // HCSR04 hcsr04(Pin(28), Pin(19));  // 超音波センサHCSR04
-    // printf("9");
-    // Motor1 motor_right(PWM(20), PWM(21));  // 右のモーター
-    // printf("a");
-    // Speaker speaker(Pin(22));  // スピーカー
-    // printf("b");
-    // GPIO<In> usb_conect(Pin(24));  // USBの接続を確認
-    // LED led_red(Pin(27));    // 照度センサ搭載の赤色LED
-    // printf("c");
-    // NJL5513R njl5513r(ADC(26), led_red, led_green);  // 照度センサnjl5513r
-    // printf("d");
-    // // GPIO28は上記のように超音波センサ
-    PicoTemp pico_temp;
-    VsysVoltage vsys;
-    GPIO<Out> led_pico(Pin(25));  // pico内蔵LED
-
-
-    // BME280 bme280(i2c_bme_bno);  // 温湿度気圧センサのBME280
-    // printf("e");
-    // BNO055 bno055(i2c_bme_bno);  // 9軸センサのBNO055;
-    // printf("f");
-    // Motor2 motor(motor_left, motor_right);  // 左右のモーター
-    // printf("g");
-    // SD sd;  // SDカード
-    // printf("h");
-    
-
-/***** loop *****/
-    while (true)
+    try
     {
-    //     /***** 受信 *****/
-
-    //     auto bme_data = bme280.read();  // BME280(温湿圧)から受信
-    // printf("i");
-
-    //     auto bno_data = bno055.read();  // BNO055(9軸)から受信
-    // printf("j");
-
-    //     // auto hcsr_data = hcsr04.read();  // HCSR04(超音波)から受信
-    // printf("k");
-
-    //     auto njl_data = njl5513r.read();  // NJL5513R(照度)から受信
-    // printf("l");
-
-
-    //     /***** 表示 *****/
-
-    //     Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
-    // printf("m");
-    //     Humidity<Unit::percent> humidity = std::get<1>(bme_data);  // 湿度
-    // printf("n");
-    //     Temperature<Unit::K> temperature = std::get<2>(bme_data);  // 気温
-    // printf("o");
-    //     print("pressure:%f Pa, humidity:%f %, temperature:%f K\n", pressure, humidity, temperature);
-    // printf("p");
-
-    //     Acceleration<Unit::m_s2> line_acceleration = std::get<0>(bno_data);  // 線形加速度
-    // printf("q");
-    //     Acceleration<Unit::m_s2> gravity_acceleration = std::get<1>(bno_data);  // 重力加速度
-    // printf("r");
-    //     MagneticFluxDensity<Unit::T> magnetic = std::get<2>(bno_data);  // 磁束密度
-    // printf("s");
-    //     AngularVelocity<Unit::rad_s> gyro = std::get<3>(bno_data);  // 角加速度
-    //     print("line acceleration x:%f, y:%f, z:%f m/s2\n", line_acceleration.x(), line_acceleration.y(), line_acceleration.z());
-    //     print("gravity acceleration x:%f, y:%f, z:%f m/s2\n", gravity_acceleration.x(), gravity_acceleration.y(), gravity_acceleration.z());
-    //     print("magnetic x:%f, y:%f, z:%f T\n", magnetic.x(), magnetic.y(), magnetic.z());
-    //     print("gyro x:%f, y:%f, z:%f rad/s2\n", gyro.x(), gyro.y(), gyro.z());
-
-    //     // print("kyori:%f m\n", hcsr_data);
-
-    //     print("syoudo:%f lx\n\n", njl_data);
-
-    auto pico_temp_data = pico_temp.read();
-    print("temp : %f\n", pico_temp_data);
-    
-    auto vsys_data = vsys.read();
-    print("vsys : %f\n", vsys_data);
+    /***** setup *****/
+        printf("0");
+        UART uart_twelite(TX(0), RX(1), 115200_hz);  // TWELITEとの通信を行うUART
+        printf("1");
+        GPIO<In> yobi_spresense(Pin(2), Pull::Down);  // Spresenseとの通信を行う予備のピン
+        printf("2");
+        GPIO<In> yobi_twelite(Pin(3));  // TWELITEに出力する予備の通信ピン
+        printf("3");
+        UART uart_spresense(TX(4), RX(5), 115200_hz);  // Spresenseとの通信を行うUART
+        printf("4");
+        I2C i2c_bme_bno(SDA(6), SCL(7));  // BMEとBNOからの受信を行うI2C
+        printf("5");
+        LED led_green(Pin(8));  // 照度センサ搭載の緑色LED
+        printf("6");
+        // GPIO 9 はSDカード
+        Motor1 motor_left(PWM(11), PWM(10));  // 左のモーター
+        printf("7");
+        // GPIO 12~15 はSDカード
+        GPIO<In> program_exit(Pin(16), Pull::Down);  // 外部からプログラムを終了させる
+        exit_pin_gpio_num = program_exit.gpio();
+        GPIO<In> not_separate_para(Pin(17), Pull::Up);  // パラシュート分離の検知用ピン (分離したらHigh(1))
+        printf("8");
+        // GPIO18は未使用
+        HCSR04 hcsr04(Pin(28), Pin(19));  // 超音波センサHCSR04
+        printf("9");
+        Motor1 motor_right(PWM(20), PWM(21));  // 右のモーター
+        printf("a");
+        Speaker speaker(Pin(22));  // スピーカー
+        printf("b");
+        GPIO<In> usb_conect(Pin(24));  // USBの接続を確認
+        LED led_pico(Pin(25));  // pico内蔵LED
+        LED led_red(Pin(27));    // 照度センサ搭載の赤色LED
+        printf("c");
+        NJL5513R njl5513r(ADC(26), led_red, led_green);  // 照度センサnjl5513r
+        printf("d");
+        PicoTemp pico_temp;
+        VsysVoltage vsys;
 
 
+        BME280 bme280(i2c_bme_bno);  // 温湿度気圧センサのBME280
+        printf("e");
+        BNO055 bno055(i2c_bme_bno);  // 9軸センサのBNO055;
+        printf("f");
+        Motor2 motor(motor_left, motor_right);  // 左右のモーター
+        printf("g");
+        SD sd;  // SDカード
+        printf("h");
+        Flush flush;
 
-    //     /***** 動作 *****/
+        // USBでの接続時はフラッシュメモリのデータを出力
+        if (usb_conect.read() == true)
+        {
+            flush.print();
+            #ifdef DEBUG
+                flush.clear();
+            #endif
+        } else {
+            flush.clear();  // フラッシュメモリを削除(削除しないと書き込めない)
+        }
 
-    //     led_red.on();  // 赤色LEDを点ける
-    // printf("t");
-    //     sleep(500_ms);
-    //     led_green.on();  // 緑色LEDを点ける
-    // printf("u");
-    //     sleep(1_s);
-    //     led_red.off();
-    // printf("v");
-    //     led_green.off();
-    // printf("w");
+        // print関数を設定
+        set_print = [&](const std::string & message)
+        {
+            try {std::cout << message << std::endl;} catch(const std::exception& e){printf(e.what());}
+            try {flush.write(message);} catch(const std::exception& e){printf(e.what());}
+            try {sd.write(message);} catch(const std::exception& e){printf(e.what());}
+        };
 
-    //     speaker.play_starwars();  // スターウォーズを再生
-    // printf("x");
+        // program_exit(16)ピンが1のとき，プログラムを強制終了する
+        gpio_set_irq_enabled_with_callback(program_exit.gpio(), GPIO_IRQ_EDGE_RISE, true, exit_callback);
 
-    //     motor.forward(1.0);  // 前に進む
-    // printf("y");
-    //     sleep(1_s);
-    //     motor.right(1.0);  // 右に進む
-    // printf("z");
-    //     sleep(1_s);
-    //     motor.forward(-1.0);  // 後ろに進む
-    // printf("finish");
 
-    //     sd.write("testtest\nsd card ni kakikomi\n");  // SDカードに書き込み
+    /***** loop *****/
+        while (true)
+        {
+            try
+            {
+                /***** 受信 *****/
 
-    //     if (para_separate.read() == true)
-    //         print("bunri ok!\n");
-    //     else 
-    //         print("bunri mada\n");
-        // uart_twelite.write("abc");
-        // printf("read : %s", std::string(uart_twelite.read()).c_str());
-        sleep(1_s);
+                auto bme_data = bme280.read();  // BME280(温湿圧)から受信
 
+                auto bno_data = bno055.read();  // BNO055(9軸)から受信
+
+                auto hcsr_data = hcsr04.read();  // HCSR04(超音波)から受信
+
+                auto njl_data = njl5513r.read();  // NJL5513R(照度)から受信
+
+                auto pico_temp_data = pico_temp.read();  // pico内蔵温度計で計測
+
+                auto vsys_data = vsys.read();  // picoの入力電圧を計測
+
+                /***** 表示 *****/
+
+                Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
+                Humidity<Unit::percent> humidity = std::get<1>(bme_data);  // 湿度
+                Temperature<Unit::K> temperature = std::get<2>(bme_data);  // 気温
+                print("pressure:%f Pa, humidity:%f %, temperature:%f K\n", pressure, humidity, temperature);
+
+                Acceleration<Unit::m_s2> line_acceleration = std::get<0>(bno_data);  // 線形加速度
+                Acceleration<Unit::m_s2> gravity_acceleration = std::get<1>(bno_data);  // 重力加速度
+                MagneticFluxDensity<Unit::T> magnetic = std::get<2>(bno_data);  // 磁束密度
+                AngularVelocity<Unit::rad_s> gyro = std::get<3>(bno_data);  // 角加速度
+                print("line acceleration x:%f, y:%f, z:%f m/s2\n", line_acceleration.x(), line_acceleration.y(), line_acceleration.z());
+                print("gravity acceleration x:%f, y:%f, z:%f m/s2\n", gravity_acceleration.x(), gravity_acceleration.y(), gravity_acceleration.z());
+                print("magnetic x:%f, y:%f, z:%f T\n", magnetic.x(), magnetic.y(), magnetic.z());
+                print("gyro x:%f, y:%f, z:%f rad/s2\n", gyro.x(), gyro.y(), gyro.z());
+
+                print("kyori:%f m\n", hcsr_data);  // 超音波距離センサ
+
+                print("syoudo:%f lx\n\n", njl_data);  // 照度センサ
+
+                print("temp : %f degC\n", pico_temp_data);  // pico内蔵の温度センサ
+
+                print("vsys : %f V\n", vsys_data);  // picoの入力電圧
+
+
+
+                /***** 動作 *****/
+
+                led_red.on();  // 赤色LEDを点ける
+                led_red.off();
+                led_green.on();  // 緑色LEDを点ける
+                led_green.off();
+                led_pico.on();  // pico内蔵LEDを点ける
+                led_pico.off();
+
+                speaker.play_windows7();  // windows7?を再生
+
+                motor.forward(1.0);  // 前に進む
+                motor.right(1.0);  // 右に進む
+                motor.forward(-1.0);  // 後ろに進む
+
+                if (not_separate_para.read() == true)  // ピンの接続でパラシュートの分離を検知
+                {
+                    print("bunri ok!\n");
+                } else {
+                    print("bunri mada\n");
+                }
+                sleep(500_ms);
+            }
+            catch(const std::exception& e)
+            {
+                print(e.what());
+            }
+        }
+
+        return 0;
     }
-
-    return 0;
+    catch(const std::exception& e)
+    {
+        // エラー時の出力
+        print(e.what());
+        print("\nOut of the loop\n");
+        sleep(100_ms);
+        exit(EXIT_FAILURE);
+    }
 }
-catch(const std::exception& e)
+
+
+
+void exit_callback(uint gpio, uint32_t emask)
 {
-    // エラー時の出力
-    std::cerr << e.what() << std::endl;
-    std::cout << e.what() << std::endl;
-    exit(1);
-}
+    if (gpio != exit_pin_gpio_num) return;
+    try {sc::print("\nIRQ Exit\n");}
+    catch (...) {printf("\nIRQ Exit\n");}
+    sleep_ms(100);
+    exit((volatile int)0);
 }
 
-}
+
+}  // namespace sc
 
 int main()
 {

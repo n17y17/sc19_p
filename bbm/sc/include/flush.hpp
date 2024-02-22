@@ -16,24 +16,34 @@
 #include "pico/stdlib.h"
 #include "hardware/sync.h"
 
+#include "binary.hpp"
+
 namespace sc
 {
 
-// class Flush 
-// {
-//     static constexpr uint32_t _target_begin = 0x1F0000;  // W25Q16JVの最終ブロック(Block31)のセクタ0の先頭アドレス = 0x1F0000
-//     uint32_t _target_offset;
-//     std::array<uint8_t, FLASH_PAGE_SIZE> write_data;
-// public:
-//     //! @brief フラッシュメモリのセットアップ
-//     Flush();
+class Flush : Noncopyable
+{
+    static constexpr uint32_t _target_begin = 0x1F0000;  // W25Q16JVの最終ブロック(Block31)のセクタ0の先頭アドレス = 0x1F0000
+    static constexpr uint32_t _target_end = 0x1FFFFF;
+    static constexpr uint32_t _block_size = 0xFFFF;  // 1ブロックのサイズ
+    static constexpr uint8_t _block_num = 1;  // 使用するブロックの数
+    uint32_t _target_offset = _target_begin;
+    std::array<uint8_t, FLASH_PAGE_SIZE> _write_data;
+public:
+    //! @brief フラッシュメモリのセットアップ
+    Flush();
 
-//     void write();
+    //! @brief フラッシュメモリに書き込み
+    void write(const Binary& write_data);
 
-//     uint8_t(*)[12] read();
+    //! @brief フラッシュメモリのデータを出力
+    void print();
 
-//     void print();
-// };
+    //! @brief フラッシュメモリのデータを削除
+    void clear();
+
+    ~Flush();
+};
 
 // uint8_t g_read_data[3];
 

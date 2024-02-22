@@ -33,8 +33,8 @@ enum UART_ID
 //! @brief  UARTのTXピン
 class TX : public Pin
 {
-    static constexpr uint8_t EnableUART0_TX[] = {0, 4, 8, 12, 16, 20};  // UART0のTXピンのGPIO番号が取り得る値
-    static constexpr uint8_t EnableUART1_TX[] = {2, 6, 10, 14, 18, 26};  // UART1のTXピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableUART0_TX[] = {0, 12, 16};  // UART0のTXピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableUART1_TX[] = {4, 8};  // UART1のTXピンのGPIO番号が取り得る値
 public:
     //! @brief TXピンを指定
     //! @param tx_gpio TXピンのGPIO番号
@@ -48,8 +48,8 @@ public:
 //! @brief  UARTのRXピン
 class RX : public Pin
 {
-    static constexpr uint8_t EnableUART0_RX[] = {1, 5, 9, 13, 17, 21};  // UART0のRXピンのGPIO番号が取り得る値
-    static constexpr uint8_t EnableUART1_RX[] = {3, 7, 11, 15, 19, 27};  // UART1のRXピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableUART0_RX[] = {1, 13, 17};  // UART0のRXピンのGPIO番号が取り得る値
+    static constexpr uint8_t EnableUART1_RX[] = {5, 9};  // UART1のRXピンのGPIO番号が取り得る値
 public:
     //! @brief RXピンを指定
     //! @param rx_gpio RXピンのGPIO番号
@@ -62,7 +62,7 @@ public:
 
 
 //! @brief UART通信
-class UART
+class UART : Noncopyable
 {
 private:
     const TX _tx;  // UARTで使用するTXピン
@@ -87,11 +87,11 @@ public:
 
 private:
     static inline bool IsUse[2] = {false, false};  // 既にUART0とUART1を使用しているか
-    static constexpr std::size_t MaxInputLen = 100;  // 受信したデータを最大で何バイトまで保管しておくか
+    static constexpr std::size_t MaxInputLen = 255;  // 受信したデータを最大で何バイトまで保管しておくか
 
 public:
-    static inline std::deque<uint8_t> uart0_queue{MaxInputLen, 0};
-    static inline std::deque<uint8_t> uart1_queue{MaxInputLen, 0};
+    static inline std::deque<uint8_t> uart0_queue{0};
+    static inline std::deque<uint8_t> uart1_queue{0};
     static void uart0_handler();
     static void uart1_handler();
 };

@@ -15,9 +15,13 @@ namespace sc
 
 void Motor1::run(float speed) const
 {
-    printf("speed:%f\n", speed);
-    if (speed < -1.0F || +1.0F < speed) throw Error(__FILE__, __LINE__, "The motor output is a number between 0 and 1. However, %d was entered.", speed);  // スピードが0未満または1以上ならエラー
-    printf("non error\n");
+    #ifdef DEBUG
+        std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
+    #endif
+    if (speed < -1.0F || +1.0F < speed) 
+    {
+        throw std::invalid_argument(f_err(__FILE__, __LINE__, "The motor output is a number between 0 and 1. However, %d was entered.", speed));  // スピードが0未満または1以上ならエラー
+    }
 
     if (speed >= 0.0F)
     {
@@ -34,6 +38,9 @@ void Motor1::run(float speed) const
 // ブレーキをかける
 void Motor1::brake() const
 {
+    #ifdef DEBUG
+        std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
+    #endif
     _in1_pwm.write(1.0F);
     _in2_pwm.write(1.0F);
 }
