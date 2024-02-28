@@ -90,7 +90,7 @@ int main()
                     Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
                     Humidity<Unit::percent> humidity = std::get<1>(bme_data);  // 湿度
                     Temperature<Unit::degC> temperature = std::get<2>(bme_data);  // 気温
-                    print("pressure:%f hPa, humidity:%f %, temperature:%f degC\n", pressure*hecto, humidity, temperature);
+                    print("pressure:%f hPa, humidity:%f %, temperature:%f degC\n", pressure/hecto, humidity, temperature);
                 }
                 catch(const std::exception& e){printf(e.what());}
                 
