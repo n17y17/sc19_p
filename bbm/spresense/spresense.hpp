@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <ctime>
+#include <string>
 #include <tuple>
 
 namespace sc 
@@ -37,6 +38,9 @@ class Spresense
     double _lon = 0.0;
     absolute_time_t _lon_update = _start_time;  // 受信した時刻
 
+    std::basic_string<uint8_t> _read_binary = {};  // 受信したデータ
+    static constexpr std::size_t _max_size = 100;  // 受信したデータを保存しておく最大のバイト数
+
     void read();
 
 public:
@@ -46,11 +50,17 @@ public:
         #ifndef NODEBUG
             std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
         #endif
+        try
+        {
+        }
+        catch(const std::exception& e)
+        {
+            print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n%s\n\n********************\n", __FILE__, __LINE__, e.what());
+        }
     }
-    catch(const std::exception& e)
+    catch (const std::exception& e)
     {
-        sc::print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n\n********************\n", __FILE__, __LINE__);
-        sc::print(e.what());
+        print(f_err(__FILE__, __LINE__, e, "An initialization error occurred"));
     }
 
     std::tuple<Latitude<Unit::deg>, Longitude<Unit::deg> > gps();

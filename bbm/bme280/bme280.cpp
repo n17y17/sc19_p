@@ -20,72 +20,78 @@ BME280::BME280(const I2C& i2c) try :
     #ifndef NODEBUG
         std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
     #endif
-
-    // this->i2c_no            = i2c_no;
-    // this->sda_pin           = sda_pin;
-    // this->scl_pin           = scl_pin;
-    // this->_addr           = addr;
-    // this->freq              = freq;
-    // measurement_reg.mode    = mode;
-       
-    // switch (i2c_no) {
-    //     case 0: i2c_hw = i2c0;
-    //             break;
-    //     case 1: i2c_hw = i2c1;
-    //             break;
-    //     default: return;
-    // }
-    // // initialize I2C access
-    // i2c_init(i2c_hw, freq);
-
-    //  // set all I2C GPIOs
-    // gpio_set_function(scl_pin, GPIO_FUNC_I2C);
-    // gpio_set_function(sda_pin, GPIO_FUNC_I2C);
-    // gpio_pull_up(scl_pin);
-    // gpio_pull_up(sda_pin);
-    // See if SPI is working - interrograte the device for its I2C ID number, should be 0x60
-    try
+    try 
     {
-        read_registers(0xD0, &chip_id, 1);
+
+        // this->i2c_no            = i2c_no;
+        // this->sda_pin           = sda_pin;
+        // this->scl_pin           = scl_pin;
+        // this->_addr           = addr;
+        // this->freq              = freq;
+        // measurement_reg.mode    = mode;
+        
+        // switch (i2c_no) {
+        //     case 0: i2c_hw = i2c0;
+        //             break;
+        //     case 1: i2c_hw = i2c1;
+        //             break;
+        //     default: return;
+        // }
+        // // initialize I2C access
+        // i2c_init(i2c_hw, freq);
+
+        //  // set all I2C GPIOs
+        // gpio_set_function(scl_pin, GPIO_FUNC_I2C);
+        // gpio_set_function(sda_pin, GPIO_FUNC_I2C);
+        // gpio_pull_up(scl_pin);
+        // gpio_pull_up(sda_pin);
+        // See if SPI is working - interrograte the device for its I2C ID number, should be 0x60
+        try
+        {
+            read_registers(0xD0, &chip_id, 1);
+        }
+        catch(const std::exception& e)
+        {
+            print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n\n********************\n", __FILE__, __LINE__);
+            print(e.what());
+            chip_id = 0x60;
+        }
+        
+        // // 標高を計算する基準点をセット
+        // pressure0    = 1013.25; //hPa
+        // temperature0 = 20; //`C
+        // altitude0    = 0; //m
+    
+        // read compensation params once
+        read_compensation_parameters();
+
+        try
+        {
+            measurement_reg.osrs_p = 0b011; // x4 Oversampling
+            measurement_reg.osrs_t = 0b011; // x4 Oversampling
+            write_register(0xF4, MODE::MODE_SLEEP); //SLEEP_MODE ensures configuration is saved
+            // save configuration
+            write_register(0xF2, 0x1); // Humidity oversampling register - going for x1
+            write_register(0xF4, measurement_reg.get());// Set rest of oversampling modes and run mode to normal
+
+            read();  // 最初の測定は誤差が大きいので，ここで測定しておく
+        }
+        catch(const std::exception& e)
+        {
+            print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n\n********************\n", __FILE__, __LINE__);
+            print(e.what());
+        }
+    
     }
     catch(const std::exception& e)
     {
-        print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n\n********************\n", __FILE__, __LINE__);
-        print(e.what());
-        chip_id = 0x60;
+        print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n%s\n\n********************\n", __FILE__, __LINE__, e.what());
     }
-    
-    // // 標高を計算する基準点をセット
-    // pressure0    = 1013.25; //hPa
-    // temperature0 = 20; //`C
-    // altitude0    = 0; //m
-  
-    // read compensation params once
-    read_compensation_parameters();
-
-    try
-    {
-        measurement_reg.osrs_p = 0b011; // x4 Oversampling
-        measurement_reg.osrs_t = 0b011; // x4 Oversampling
-        write_register(0xF4, MODE::MODE_SLEEP); //SLEEP_MODE ensures configuration is saved
-        // save configuration
-        write_register(0xF2, 0x1); // Humidity oversampling register - going for x1
-        write_register(0xF4, measurement_reg.get());// Set rest of oversampling modes and run mode to normal
-
-        read();  // 最初の測定は誤差が大きいので，ここで測定しておく
-    }
-    catch(const std::exception& e)
-    {
-        print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n\n********************\n", __FILE__, __LINE__);
-        print(e.what());
-    }
-    
 }
-catch(const std::exception& e)
+catch (const std::exception& e)
 {
-    print("\n********************\n\n<<!! INIT ERRPR !!>> in %s line %d\n\n********************\n", __FILE__, __LINE__);
-    print(e.what());
-};
+    print(f_err(__FILE__, __LINE__, e, "An initialization error occurred"));
+}
 
 // void BME280::set_origin(float _pressure0=1013.25, float _temperature0=20, float _altitude0=0){
 //     #ifndef NODEBUG
@@ -100,7 +106,6 @@ std::tuple<Pressure<Unit::Pa>,Humidity<Unit::percent>,Temperature<Unit::degC>> B
     #ifndef NODEBUG
         std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
     #endif
-    int32_t pressure, humidity, temperature;
     if (measurement_reg.mode == BME280::MODE::MODE_FORCED) {
         write_register(0xf4, measurement_reg.get());
         int count = 0;
@@ -111,18 +116,33 @@ std::tuple<Pressure<Unit::Pa>,Humidity<Unit::percent>,Temperature<Unit::degC>> B
             if (++count > 100) break;
         } while (buffer & 0x08); // loop until measurement completed
     }
-    // read raw sensor data from BME280
-    bme280_read_raw(&humidity,
-                    &pressure,
-                    &temperature);
+    
+    int32_t pressure[3], humidity[3], temperature[3];
 
-    // compensate raw sensor values
-    pressure = compensate_pressure(pressure);
-    humidity = compensate_humidity(humidity);
-    temperature = compensate_temp(temperature);
-    Pressure<Unit::Pa>pressure_Pa(pressure);
-    Humidity<Unit::percent>humidity_percent(double(humidity/1024.0));
-    Temperature<Unit::degC>temperature_degC(double(temperature/100.0));
+    // 3回測定
+    for (int i=0; i<3; ++i)
+    {
+        bme280_read_raw(&(humidity[i]), &(pressure[i]), &(temperature[i]));
+        sleep_ms(1);
+    }
+
+    // 中央値を求める
+    int32_t pressure_m = median(pressure[0], pressure[1], pressure[2]);
+    int32_t humidity_m = median(humidity[0], humidity[1], humidity[2]);
+    int32_t temperature_m = median(temperature[0], temperature[1], temperature[2]);
+
+    pressure_m = compensate_pressure(pressure_m);
+    humidity_m = compensate_humidity(humidity_m);
+    temperature_m = compensate_temp(temperature_m);
+
+    if (pressure_m < 900*100 || 1100*100 < pressure_m || humidity_m/1024 <= 0 || 100 <= humidity_m/1024 || temperature_m/100.0 < -20 || 50 < temperature_m/100.0)
+    {
+throw std::runtime_error(f_err(__FILE__, __LINE__, "BME280 measurement value is abnormal"));  // BME280の測定値が異常です
+    }
+
+    Pressure<Unit::Pa>pressure_Pa(pressure_m);
+    Humidity<Unit::percent>humidity_percent(humidity_m/1024.0);
+    Temperature<Unit::degC>temperature_degC(temperature_m/100.0);
     // measurement.pressure = Pressure / 100.0;
     // measurement.humidity = Humidity / 1024.0;
     // measurement.temperature = Temperature / 100.0;
@@ -132,6 +152,8 @@ std::tuple<Pressure<Unit::Pa>,Humidity<Unit::percent>,Temperature<Unit::degC>> B
     // // apply formula to retrieve altitude from air pressure
     // measurement.altitude_1 = altitude0 + ((temperature0 + 273.15F) / 0.0065F) * (1 - std::pow((measurement.pressure / pressure0), (1.0F / 5.257F)));
     // measurement.altitude_2 = altitude0 + ((measurement.temperature + 273.15F) / 0.0065F) * (std::pow((pressure0 / measurement.pressure), 1.0F / 5.257F) -1.0F);
+
+    print("bme_read_data:%f,%f,%f\n", pressure_m, humidity_m/1024.0, temperature_m/100.0);
 
     return {pressure_Pa,humidity_percent,temperature_degC};
 

@@ -322,6 +322,10 @@ public:
 
     Element constexpr operator[] (std::size_t index) const
         {return _data[index];}
+
+    //! @brief ベクトル量の大きさ
+    Element magnitude() const
+        {return Element(std::sqrt(double(_data[0]*_data[0] + _data[1]*_data[1] + _data[2]*_data[2])));}
 };
 
 //! @brief ベクトルの単項+
@@ -433,19 +437,19 @@ public:
         {return number();}
 };
 
+//! @brief 角度(deg)を角度(rad)に変換
+constexpr double deg_to_rad(const double& num)
+    {return num * PI / 180.0;}
+
+//! @brief 角度(rad)を角度(deg)に変換
+constexpr double rad_to_deg(const double& num)
+    {return num * 180.0 / PI;}
+
 // 角度(deg)
 template<>
 class Angle<Unit::deg> : public Angle<Unit::rad> 
 {
 public:
-    //! @brief 角度(deg)を角度(rad)に変換
-    static constexpr double deg_to_rad(const double& num)
-        {return num * PI / 180.0;}
-
-    //! @brief 角度(rad)を角度(deg)に変換
-    static constexpr double rad_to_deg(const double& num)
-        {return num * 180.0 / PI;}
-
     //! @brief 角度(deg)
     explicit constexpr Angle(const double& num):
         Angle<Unit::rad>(deg_to_rad(num)) {}
@@ -546,17 +550,18 @@ public:
         {return number();}
 };
 
+//! @brief 温度(℃)を温度(K)に変換
+constexpr double degC_to_K(const double& num)
+    {return num + 273.15;}
+
+//! @brief 温度(K)を温度(℃)に変換
+constexpr double K_to_degC(const double& num)
+    {return num - 273.15;}
+
 // 温度(degC)
 template<>
 class Temperature<Unit::degC> : public Temperature<Unit::K> 
 {
-    //! @brief 温度(℃)を温度(K)に変換
-    static constexpr double degC_to_K(const double& num)
-        {return num + 273.15;}
-
-    //! @brief 温度(K)を温度(℃)に変換
-    static constexpr double K_to_degC(const double& num)
-        {return num - 273.15;}
 public:
     //! @brief 温度(℃)
     explicit constexpr Temperature(const double& num):
@@ -724,13 +729,6 @@ public:
 template<>
 class Latitude<Unit::deg> : public Latitude<Unit::rad> 
 {
-    //! @brief 緯度(deg)を緯度(rad)に変換
-    static constexpr double deg_to_rad(const double& num)
-        {return num * PI / 180.0;}
-
-    //! @brief 緯度(rad)を緯度(deg)に変換
-    static constexpr double rad_to_deg(const double& num)
-        {return num * 180.0 / PI;}
 public:
     //! @brief 緯度(deg)
     explicit constexpr Latitude(const double& num):
@@ -771,13 +769,6 @@ public:
 template<>
 class Longitude<Unit::deg> : public Longitude<Unit::rad> 
 {
-    //! @brief 経度(deg)を経度(rad)に変換
-    static constexpr double deg_to_rad(const double& num)
-        {return num * PI / 180.0;}
-
-    //! @brief 経度(rad)を経度(deg)に変換
-    static constexpr double rad_to_deg(const double& num)
-        {return num * 180.0 / PI;}
 public:
     //! @brief 経度(deg)
     explicit constexpr Longitude(const double& num):
