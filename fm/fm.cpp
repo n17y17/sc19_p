@@ -80,12 +80,12 @@ int main()
         }
         catch(const std::exception& e){printf(e.what());}
 
-        fase = Fase::Ldistance;
+        fase = Fase::Wait;
 
         absolute_time_t recent_successful = get_absolute_time();  // エラーが出続けている時間を測るために使う．
         bool is_success = true;  // エラーが出ずに成功したか
 
-        led_pico.on();
+        const absolute_time_t start_time = get_absolute_time();//開始時刻
 
     // ************************************************** //
     //                        loop                        //
@@ -114,107 +114,124 @@ int main()
                     // ************************************************** //
                     //                     待機フェーズ                    //
                     // ************************************************** //
-                    // case Fase::Wait:
-                    // {
-                    //     try
-                    //     {
-                    //         auto njl_data = njl5513r.read();
-                    //         if(njl_data>2500_lx)//照度によりキャリア展開検知　→落下フェーズへ
-                    //         {
-                    //             fase=Fase::Fall;
-                    //             break;
-                    //         }
-                    //         else
-                    //         {
-                    //             break;
-                    //         }
-                    //     }
-                    //     catch(const std::exception& e)
-                    //     {
-                    //         print(e.what());
-                    //         is_success = false;
-                    //         // もしエラーが出続けているなら
-                    //         if (absolute_time_diff_us(recent_successful, get_absolute_time()) > 60*1000*1000)
-                    //         {
-                    //         }
-                    //     }
-                    //     break;  // 保険のbreak
-                    // }
+                    case Fase::Wait:
+                    {
+                        try
+                        {
+                            //照度によりキャリア展開検知&&自由落下　→落下フェーズへ
+                            auto njl_data = njl5513r.read();
+                            auto bno_data = bno055.read();
+                            if((njl_data>2500_lx)&&(is_free_fall(std::get<0>(bno_data), std::get<1>(bno_data))))
+                            {
+                                fase=Fase::Fall;
+                                print("Shifts to the falling phase under condition 1\n");  // 条件1で落下フェーズに移行します
+                                break;
+                            }
+                            //開始から２分以上＆＆高度５ｍ以下　→落下フェーズへ
+                            auto bme_data = bme280.read();  // BME280(温湿圧)から受信
+                            Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
+                            Temperature<Unit::degC> temperature = std::get<2>(bme_data);  // 気温
+                            Altitude<Unit::m> altitude(pressure, temperature);
+                            if((absolute_time_diff_us(start_time, get_absolute_time())>120*1000*1000)&&(altitude<5_m))
+                            {
+                                fase=Fase::Fall;
+                                print("Shifts to the falling phase under condition 2\n");  // 条件2で落下フェーズに移行します
+                                break;
+                            }
+                            //開始から４分以上　→落下フェーズへ
+                            if((absolute_time_diff_us(start_time, get_absolute_time())>240*1000*1000))
+                            {
+                                fase=Fase::Fall;
+                                print("Shifts to the falling phase under condition 3\n");  // 条件3で落下フェーズに移行します
+                                break;
+                            }
+                        }
+                        catch(const std::exception& e)
+                        {
+                            print(e.what());
+                            is_success = false;
+                            // もしエラーが出続けているなら
+                            //エラー２分以上　→落下フェーズへ
+                            if (absolute_time_diff_us(recent_successful, get_absolute_time()) > 120*1000*1000)
+                            {
+                                fase=Fase::Fall;
+                                print("Shifts to the falling phase under condition 4\n");  // 条件4で落下フェーズに移行します
+                            }
+                        }
+                        break;  // 保険のbreak
+                    }
 
-                    // // ************************************************** //
-                    // //                     落下フェーズ                    //
-                    // // ************************************************** //
-                    // case Fase::Fall:
-                    // {
-                    //     try
-                    //     {
-                    //         int separate;
-                    //         auto bme_data = bme280.read();  // BME280(温湿圧)から受信
-                    //         Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
-                    //         Temperature<Unit::degC> temperature = std::get<2>(bme_data);  // 気温
-                    //         Altitude<Unit::m> altitude(pressure, temperature);
-                    //         if(altitude<5_m)//地面からの標高が5m以内
-                    //         {
-                    //             sleep(10_s);//念のため待機しておく
-                    //             separate=para_separate.read();
-                    //             if(separate!=1)//パラシュートが取れていない場合、動いてみる？
-                    //             {
-                    //                 motor.forward(1.0);
-                    //                 sleep(1_s);
-                    //                 motor.forward(0);
-                    //                 break;
-                    //             }
-                    //             auto bno_data = bno055.read();  // BNO055(9軸)から受信
-                    //             Acceleration<Unit::m_s2> gravity_acceleration = std::get<1>(bno_data);//重力加速度取得
-                    //             //Z軸の重力加速度が正かどうかで機体の体制修正
-                    //             if(gravity_acceleration.z()<3_m_s2)//z軸が負なら正常
-                    //             {
-                    //                 fase=Fase::Ldistance;
-                    //                 break;
-                    //             } else {
-                    //                 motor.forward(1.0);//じたばたして体制修正できるかな？
-                    //                 sleep(1_s);
-                    //                 motor.forward(0);
-                    //                 motor.right(1.0); 
-                    //                 sleep(1_s);
-                    //                 motor.right(0); 
-                    //                 motor.left(1.0); 
-                    //                 sleep(1_s);
-                    //                 motor.left(0);
-                    //                 break;
-                    //             }
-                    //         } else {
-                    //             break;
-                    //         }
-                    //     }
-                    //     catch(const std::exception& e)
-                    //     {
-                    //         print(e.what());
-                    //         is_success = false;
-                    //         // もしエラーが出続けているなら
-                    //         if (absolute_time_diff_us(recent_successful, get_absolute_time()) > 60*1000*1000)
-                    //         {
-                    //         }
-                    //     }
-                    //     break;  // 保険のbreak
-                    // }
+                    // ************************************************** //
+                    //                     落下フェーズ                    //
+                    // ************************************************** //
+                    case Fase::Fall:
+                    {
+                        try
+                        {
+                            int separate;
+                            auto bme_data = bme280.read();  // BME280(温湿圧)から受信
+                            Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
+                            Temperature<Unit::degC> temperature = std::get<2>(bme_data);  // 気温
+                            Altitude<Unit::m> altitude(pressure, temperature);
+                            if(altitude<5_m)//地面からの標高が5m以内
+                            {
+                                sleep(10_s);//念のため待機しておく
+                                separate=para_separate.read();
+                                if(separate!=1)//パラシュートが取れていない場合、動いてみる？
+                                {
+                                    motor.forward(1.0);
+                                    sleep(1_s);
+                                    motor.forward(0);
+                                    break;
+                                }
+                                auto bno_data = bno055.read();  // BNO055(9軸)から受信
+                                Acceleration<Unit::m_s2> gravity_acceleration = std::get<1>(bno_data);//重力加速度取得
+                                //Z軸の重力加速度が正かどうかで機体の体制修正
+                                if(gravity_acceleration.z()<3_m_s2)//z軸が負なら正常
+                                {
+                                    fase=Fase::Ldistance;
+                                    break;
+                                } else {
+                                    motor.forward(1.0);//じたばたして体制修正できるかな？
+                                    sleep(1_s);
+                                    motor.forward(0);
+                                    motor.right(1.0); 
+                                    sleep(1_s);
+                                    motor.right(0); 
+                                    motor.left(1.0); 
+                                    sleep(1_s);
+                                    motor.left(0);
+                                    break;
+                                }
+                            } else {
+                                break;
+                            }
+                        }
+                        catch(const std::exception& e)
+                        {
+                            print(e.what());
+                            is_success = false;
+                            // もしエラーが出続けているなら
+                            if (absolute_time_diff_us(recent_successful, get_absolute_time()) > 60*1000*1000)
+                            {
+                            }
+                        }
+                        break;  // 保険のbreak
+                    }
 
                     // ************************************************** //
                     //                   遠距離フェーズ                    //
                     // ************************************************** //
                     case Fase::Ldistance:
                     {
-                        sleep(1_s);
                         try
                         {
-                            auto gps_data = spresense.gps();
-                            auto bno_data = bno055.read();
                             //------ちゃんと動くか確認するためのコード-----
-                            MagneticFluxDensity<sc::Unit::T> magnetic = std::get<2>(bno_data);
-                            double t_lon = 139.606537;//ゴールの経度(自分たちで決めて書き換えてね)
-                            double t_lat = 35.864639;//ゴールの緯度
-                            double m_lon = double(std::get<1>(gps_data));//自分の経度(ここはGPSで手に入れたものが入るように書き換えて)
-                            double m_lat = double(std::get<0>(gps_data));//自分の緯度
+                            Vector3<double> magnetic(0.0,0.0,0.0);
+                            double t_lon = 0.0000;//ゴールの経度(自分たちで決めて書き換えてね)
+                            double t_lat = 0.0000;//ゴールの緯度
+                            double m_lon = 0.0000;//自分の経度(ここはGPSで手に入れたものが入るように書き換えて)
+                            double m_lat = 0.0000;//自分の緯度
                             double t_lon_rad = deg_to_rad(t_lon);
                             double t_lat_rad = deg_to_rad(t_lat);
                             double m_lon_rad = deg_to_rad(m_lon);
@@ -225,13 +242,13 @@ int main()
                             // Vector3<double> front_vetor_basic = (-1.0, 0.0, 0.0);//機体正面の単位ベクトル
 
                             //北を見つける
-                            Vector3<double> North_vector(double(magnetic.x()),double(magnetic.y()),0);//磁気センサから求める北の向き
+                            Vector3<double> North_vector(magnetic.x(),magnetic.y(),0);//磁気センサから求める北の向き
                             // Vector3<double> North_vector_basic = Normalization(North_vector);//正規化
                             double North_angle_rad;//後で使う北の角度
 
                             // 北がBnoの座標軸において何度回転した位置にあるか求める
                             // 但しθは[0,2Pi)とした
-                            North_angle_rad = atan2(double(magnetic.y()),double(magnetic.x()));
+                            North_angle_rad = atan2(magnetic.y(),magnetic.x());
                             if(North_angle_rad < 0)
                             {
                                 North_angle_rad += 2 * PI;
@@ -288,8 +305,7 @@ int main()
                             direction_angle_rad = direction_angle_rad + PI;//正面がxの負の向きなので180°回転
 
                             double direction_angle_degree = rad_to_deg(direction_angle_rad);
-                            printf("angle:%f\n",direction_angle_degree);
-                            printf("kyori:%f\n", direction_vector_2.magnitude());
+                            printf("%f\n",direction_angle_degree);
                             //ここからdirection_angleをもとに機体を動かす
                             //一旦SC-17のコードを引っ張ってきたよ
                             //sleep_msよりsleep使ったほうがいい?
@@ -371,69 +387,69 @@ int main()
                         break;  // 保険のbreak
                     }
 
-                    // // ************************************************** //
-                    // //                   遠距離フェーズ                    //
-                    // // ************************************************** //
-                    // case Fase::Sdistance:
-                    // {
-                    //     try
-                    //     {
-                    //         if(true)//ゴールがカメラの真ん中
-                    //         {
-                    //             //少し進む
-                    //             motor.forward(1.0);
-                    //             sleep(1_s);
-                    //             motor.forward(0);
-                    //             //超音波でゴール検知　→ゴール    
-                    //             double hcsr_data_average = 0;
-                    //             for(int i=0;i<10;++i)//超音波の値の平均
-                    //             {
-                    //                 hcsr_data_average += double(hcsr04.read());
-                    //             }
-                    //             hcsr_data_average/=10.0;
-                    //             if(hcsr_data_average<0.2)//0.2m以内でゴール
-                    //             {
-                    //                 print("goal\n");
-                    //                 while(true)
-                    //                 {
-                    //                     ;
-                    //                 }
-                    //             }
-                    //         }
-                    //         else if(true)//ゴールがカメラの右
-                    //         {
-                    //             motor.right(1.0); 
-                    //             sleep(1_s);
-                    //             motor.right(0); 
-                    //             break;
-                    //         }
-                    //         else if(true)//ゴールがカメラの左
-                    //         {
-                    //             motor.left(1.0); 
-                    //             sleep(1_s);
-                    //             motor.left(0); 
-                    //             break;
-                    //         }
-                    //         else//ゴールがみつからない
-                    //         {
-                    //             motor.right(1.0); 
-                    //             sleep(1_s);
-                    //             motor.right(0); 
-                    //             break;
-                    //         }
-                    //     }
-                    //     catch(const std::exception& e)
-                    //     {
-                    //         print(e.what());
-                    //         print(e.what());
-                    //         is_success = false;
-                    //         // もしエラーが出続けているなら
-                    //         if (absolute_time_diff_us(recent_successful, get_absolute_time()) > 60*1000*1000)
-                    //         {
-                    //         }
-                    //     }
-                    //     break;  // 保険のbreak
-                    // }
+                    // ************************************************** //
+                    //                   遠距離フェーズ                    //
+                    // ************************************************** //
+                    case Fase::Sdistance:
+                    {
+                        try
+                        {
+                            if(true)//ゴールがカメラの真ん中
+                            {
+                                //少し進む
+                                motor.forward(1.0);
+                                sleep(1_s);
+                                motor.forward(0);
+                                //超音波でゴール検知　→ゴール    
+                                double hcsr_data_average = 0;
+                                for(int i=0;i<10;++i)//超音波の値の平均
+                                {
+                                    hcsr_data_average += double(hcsr04.read());
+                                }
+                                hcsr_data_average/=10.0;
+                                if(hcsr_data_average<0.2)//0.2m以内でゴール
+                                {
+                                    print("goal\n");
+                                    while(true)
+                                    {
+                                        ;
+                                    }
+                                }
+                            }
+                            else if(true)//ゴールがカメラの右
+                            {
+                                motor.right(1.0); 
+                                sleep(1_s);
+                                motor.right(0); 
+                                break;
+                            }
+                            else if(true)//ゴールがカメラの左
+                            {
+                                motor.left(1.0); 
+                                sleep(1_s);
+                                motor.left(0); 
+                                break;
+                            }
+                            else//ゴールがみつからない
+                            {
+                                motor.right(1.0); 
+                                sleep(1_s);
+                                motor.right(0); 
+                                break;
+                            }
+                        }
+                        catch(const std::exception& e)
+                        {
+                            print(e.what());
+                            print(e.what());
+                            is_success = false;
+                            // もしエラーが出続けているなら
+                            if (absolute_time_diff_us(recent_successful, get_absolute_time()) > 60*1000*1000)
+                            {
+                            }
+                        }
+                        break;  // 保険のbreak
+                    }
 
                     // ************************************************** //
                 }

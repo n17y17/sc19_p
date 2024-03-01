@@ -98,6 +98,9 @@ int main()
         {
             try
             {
+                i2c_bme_bno.write("hello aiueo\n", 0x08);
+                sleep(1_s);
+                continue;
                 // try
                 // {
                 //     auto bme_data = bme280.read();  // BME280(温湿圧)から受信
