@@ -19,12 +19,14 @@ class Speaker {
     const Pin& _pin;
     const uint8_t _speaker_pwm_slice_num = pwm_gpio_to_slice_num(_pin.gpio());
     pwm_config _speaker_pwm_slice_config;
-    static constexpr double _speaker_pwm_clkdiv = 10;
+    static constexpr double _speaker_pwm_clkdiv = 5.5;
 
 public:
     Speaker(const Pin& pin);
     void play_starwars();
     void play_windows7();
+    void play_hogwarts();
+    void play_mario();
 };
 
 }

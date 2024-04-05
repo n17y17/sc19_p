@@ -93,8 +93,9 @@ public:
         #ifndef NODEBUG
             std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
         #endif
-        _left_motor.run(left_speed);
-        _right_motor.run(right_speed);
+        constexpr double keisuu = 1.0;  // ちょっと推進力を落とす
+        _left_motor.run(left_speed * keisuu);
+        _right_motor.run(right_speed * keisuu);
     }
 
     // まっすぐ進む
@@ -125,6 +126,15 @@ public:
             std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
         #endif
         run(speed, 0.0F);
+    }
+
+    // 止まる
+    void stop() const
+    {
+        #ifndef NODEBUG
+            std::cout << "\t [ func " << __FILE__ << " : " << __LINE__ << " ] " << std::endl; 
+        #endif
+        run(0.0F, 0.0F);
     }
 
     // ブレーキをかける

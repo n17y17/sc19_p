@@ -39,7 +39,7 @@ Vector3<double> Rotation_clockwise_xy(Vector3<double> vec, Latitude<Unit::rad> R
 double distance_sphere(double t_lon,double t_lat,double m_lon,double m_lat){
     double cos_n = sin(t_lat)*sin(m_lat) + cos(t_lat)*cos(m_lat)*cos(t_lon - m_lon);//なす角のcos
     const double R = 6371.0;
-    double distance = R * acos(cos_n);
+    double distance = R * acos(cos_n) * 1000;
     return distance;
 }
 
@@ -47,7 +47,7 @@ double distance_sphere(double t_lon,double t_lat,double m_lon,double m_lat){
 //! @brief 自由落下しているかを判定
 bool is_free_fall(const Acceleration<Unit::m_s2>& line_acce, const Acceleration<Unit::m_s2>& gravity)
 {
-    if ((line_acce + gravity).magnitude() < 4_m_s2)  // 全加速度の大きさが4m/s²以下なら，自由落下しているとみなす
+    if ((line_acce + gravity).magnitude() < 4_m_s2 && (sleep(0.5_s), (line_acce + gravity).magnitude() < 4_m_s2))  // 全加速度の大きさが4m/s²以下なら，自由落下しているとみなす
     {
         return true;
     } else {
@@ -56,9 +56,9 @@ bool is_free_fall(const Acceleration<Unit::m_s2>& line_acce, const Acceleration<
 }
 
 //! @brief 静止しているかを判定
-bool is_stationary(const Acceleration<Unit::m_s2>& line_acce)
+bool is_stationary(const Acceleration<Unit::m_s2>& line_acce, const AngularVelocity<Unit::rad_s>& gyro)
 {
-    if (line_acce.magnitude() < 0.8_m_s2)  // 線形加速度の大きさが0.8以下なら，静止しているとみなす
+    if ((line_acce.magnitude()<0.8_m_s2 && gyro.magnitude()<0.5_rad_s) && (sleep(0.5_s), (line_acce.magnitude()<0.8_m_s2 && gyro.magnitude()<0.5_rad_s)) && (sleep(0.5_s), (line_acce.magnitude()<0.8_m_s2 && gyro.magnitude()<0.5_rad_s)))  // 線形加速度の大きさが0.8以下なら，静止しているとみなす
     {
         return true;
     } else {

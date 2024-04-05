@@ -15,9 +15,12 @@ int main()
         printf("2");
         GPIO<Out> yobi_twelite(Pin(3));  // TWELITEに出力する予備の通信ピン
         printf("3");
-        UART uart_spresense(TX(4), RX(5), 31250_hz);  // Spresenseとの通信を行うUART
+        UART uart_spresense(TX(4), RX(5), 115200_hz);  // Spresenseとの通信を行うUART
         printf("4");
         I2C i2c_bme_bno(SDA(6), SCL(7));  // BMEとBNOからの受信を行うI2C
+        sleep(1_s);
+        i2c_bme_bno.write_memory(Binary(0xb6), 0x76, MemoryAddr(0xe0));
+        sleep(1_s);
         printf("5");
         LED led_green(Pin(8));  // 照度センサ搭載の緑色LED
         printf("6");
@@ -55,14 +58,15 @@ int main()
         Flush flush;
         Spresense spresense(uart_spresense);
         Twelite twelite(uart_twelite);
+        // Twelite twelite2(uart_spresense);
 
         // USBでの接続時はフラッシュメモリのデータを出力
         if (usb_conect.read() == true)
         {
             flush.print();
-            // #ifndef NODEBUG
+            #ifndef NODEBUG
                 flush.clear();
-            // #endif
+            #endif
         } else {
             flush.clear();  // フラッシュメモリを削除(削除しないと書き込めない)
         }
@@ -88,7 +92,8 @@ int main()
         }
         catch(const std::exception& e){printf(e.what());}
 
-        led_pico.on();
+        motor.forward(-1);
+        while(1);
         
 
     /***** loop *****/
@@ -98,20 +103,31 @@ int main()
         {
             try
             {
-                i2c_bme_bno.write("hello aiueo\n", 0x08);
-                sleep(1_s);
-                continue;
+                // print(twelite.read());
+                // sleep(0.2_s);
+
+
                 // try
                 // {
-                //     auto bme_data = bme280.read();  // BME280(温湿圧)から受信
+                //     // twelite2.write(0x78, "testtest\n");
+                //     std::cout << twelite.read() << std::flush;
+                //     // std::cout << uart_spresense.read() << std::endl;
+                // } catch(const std::exception& e){printf(e.what());}
+                // sleep(0.5_s);
 
-                //     Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
-                //     Humidity<Unit::percent> humidity = std::get<1>(bme_data);  // 湿度
-                //     Temperature<Unit::degC> temperature = std::get<2>(bme_data);  // 気温
-                //     Altitude<Unit::m> altitude(pressure, temperature);  // 標高
-                //     print("pressure:%f hPa, humidity:%f %, temperature:%f degC, altitude:%f\n", double(pressure/hecto), double(humidity), double(temperature), double(altitude));
-                // }
-                // catch(const std::exception& e){printf(e.what());}
+                try
+                {
+                    auto bme_data = bme280.read();  // BME280(温湿圧)から受信
+
+                    // Pressure<Unit::Pa> pressure = std::get<0>(bme_data);  // 気圧
+                    // Humidity<Unit::percent> humidity = std::get<1>(bme_data);  // 湿度
+                    // Temperature<Unit::degC> temperature = std::get<2>(bme_data);  // 気温
+                    // Altitude<Unit::m> altitude(pressure, temperature);  // 標高
+                    // print("pressure:%f hPa, humidity:%.10f %, temperature:%.10f degC, altitude:%.10f\n", double(pressure/hecto), double(humidity), double(temperature), double(altitude));
+                    // print("%d, %d, %d\n", (double(pressure/hecto) == 63387.0 ? 1 : 0), (double(humidity) == 69.037109 ? 1 : 0),(double(temperature) == 24.5 ? 1 : 0));
+                    //63387.000000,69.037109,24.500000
+                }
+                catch(const std::exception& e){printf(e.what());}
                 
                 try
                 {
@@ -126,114 +142,121 @@ int main()
                     // print("magnetic x:%f, y:%f, z:%f mT\n", magnetic.x()/milli, magnetic.y()/milli, magnetic.z()/milli);
                     // print("gyro x:%f, y:%f, z:%f rad/s2\n", gyro.x(), gyro.y(), gyro.z());
                 }
-                catch(const std::exception& e){
-                    // printf(e.what());
+                catch(const std::exception& e){printf(e.what());}
+                
+                try
+                {
+                    auto hcsr_data = hcsr04.read();  // HCSR04(超音波)から受信
+                    // double hcsr_data_average = 0;
+                    // for(int i=0;i<10;++i)//超音波の値の平均
+                    // {
+                    //     [&]{try{
+                    //         hcsr_data_average += double(hcsr04.read());
+                    //         return true;
+                    //     }catch(...){return false;}}();
+                    // }
+                    // hcsr_data_average/=10.0;
+                    // print("ave_hcsr:%f\n", hcsr_data_average);
                 }
+                catch(const std::exception& e){printf(e.what());}
+                
+                try
+                {
+                    auto njl_data = njl5513r.read();  // NJL5513R(照度)から受信
+
+                    // print("syoudo:%f lx\n\n", njl_data);  // 照度センサ
+                }
+                catch(const std::exception& e){printf(e.what());}
+
+                try
+                {
+                    auto pico_temp_data = pico_temp.read();  // pico内蔵温度計で計測
+
+                    // print("temp : %f degC\n", pico_temp_data);  // pico内蔵の温度センサ
+                }
+                catch(const std::exception& e){printf(e.what());}
+                
+                try
+                {
+                    auto vsys_data = vsys.read();  // picoの入力電圧を計測
+
+                    // print("vsys : %f V\n", vsys_data);  // picoの入力電圧
+                }
+                catch(const std::exception& e){printf(e.what());}
+                
+                try
+                {
+                    if (not_separate_para.read() == true)  // ピンの接続でパラシュートの分離を検知
+                    {
+                        print("bunri ok!\n");
+                    } else {
+                        print("bunri mada\n");
+                    }
+                }
+                catch(const std::exception& e){printf(e.what());}
+                
+                try
+                {
+                    auto gps_data = spresense.gps();  // GPSのデータを取得
+                    // print("gps latitude : %f deg\n", double(std::get<0>(gps_data)));  // 緯度
+                    // print("gps longitude : %f deg\n", double(std::get<1>(gps_data)));  // 経度
+                }
+                catch(const std::exception& e){printf(e.what());}
+                
+                try
+                {
+                    auto time_data = spresense.time();  // 現在時刻のデータを取得
+
+                    // std::string time_str(20, '\0');
+                    // strftime(time_str.data(), 20, "%FT%TZ\n", &time_data);
+                    // print(time_str);  // 時刻
+                }
+                catch(const std::exception& e){printf(e.what());}
                 
                 // try
                 // {
-                //     auto hcsr_data = hcsr04.read();  // HCSR04(超音波)から受信
+                //     auto camera_data = spresense.camera();  // カメラのデータを取得
 
-                //     print("kyori:%f m\n", hcsr_data);  // 超音波距離センサ
+                //     // if (camera_data == Cam::Left)  // カメラのデータ
+                //     // {
+                //     //     print("camera hidari\n");
+                //     // } else if (camera_data == Cam::Center) {
+                //     //     print("camera mannaka\n");
+                //     // } else if (camera_data == Cam::Left) {
+                //     //     print("camera migi\n");
+                //     // }
                 // }
                 // catch(const std::exception& e){printf(e.what());}
                 
-                // try
-                // {
-                //     auto njl_data = njl5513r.read();  // NJL5513R(照度)から受信
+                try
+                {
+                    led_red.on();  // 赤色LEDを点ける
+                    led_green.on();  // 緑色LEDを点ける
+                    led_pico.on();  // pico内蔵LEDを点ける
+                    sleep(1_ms);
+                    led_red.off();
+                    led_green.off();
+                    led_pico.off();
+                }
+                catch(const std::exception& e){printf(e.what());}
 
-                //     print("syoudo:%f lx\n\n", njl_data);  // 照度センサ
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-
-                // try
-                // {
-                //     auto pico_temp_data = pico_temp.read();  // pico内蔵温度計で計測
-
-                //     print("temp : %f degC\n", pico_temp_data);  // pico内蔵の温度センサ
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-                
-                // try
-                // {
-                //     auto vsys_data = vsys.read();  // picoの入力電圧を計測
-
-                //     print("vsys : %f V\n", vsys_data);  // picoの入力電圧
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-                
-                // try
-                // {
-                //     if (not_separate_para.read() == true)  // ピンの接続でパラシュートの分離を検知
-                //     {
-                //         print("bunri ok!\n");
-                //     } else {
-                //         print("bunri mada\n");
-                //     }
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-                
-                // try
-                // {
-                //     auto gps_data = spresense.gps();  // GPSのデータを取得
-                //     print("gps latitude : %f deg\n", double(std::get<0>(gps_data)));  // 緯度
-                //     print("gps longitude : %f deg\n", double(std::get<1>(gps_data)));  // 経度
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-                
-                // try
-                // {
-                //     auto time_data = spresense.time();  // 現在時刻のデータを取得
-
-                //     std::string time_str(20, '\0');
-                //     strftime(time_str.data(), 20, "%FT%TZ\n", &time_data);
-                //     print(time_str);  // 時刻
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-                
-                // // try
-                // // {
-                // //     auto camera_data = spresense.camera();  // カメラのデータを取得
-
-                // //     if (camera_data == Cam::Left)  // カメラのデータ
-                // //     {
-                // //         print("camera hidari\n");
-                // //     } else if (camera_data == Cam::Center) {
-                // //         print("camera mannaka\n");
-                // //     } else if (camera_data == Cam::Left) {
-                // //         print("camera migi\n");
-                // //     }
-                // // }
-                // // catch(const std::exception& e){printf(e.what());}
-                
-                // try
-                // {
-                //     led_red.on();  // 赤色LEDを点ける
-                //     led_green.on();  // 緑色LEDを点ける
-                //     led_pico.on();  // pico内蔵LEDを点ける
-                //     sleep(1_ms);
-                //     led_red.off();
-                //     led_green.off();
-                //     led_pico.off();
-                // }
-                // catch(const std::exception& e){printf(e.what());}
-
-                // try
-                // {
-                //     speaker.play_windows7();  // windows7?を再生
-                // }
-                // catch(const std::exception& e){printf(e.what());}
+                try
+                {
+                    speaker.play_windows7();  // windows7?を再生
+                }
+                catch(const std::exception& e){printf(e.what());}
                 
                 // try
                 // {                    
                 //     motor.forward(1.0);  // 前に進む
-                //     sleep(0.5_s);
-                //     motor.right(1.0);  // 右に進む
-                //     sleep(0.5_s);
-                //     motor.forward(-1.0);  // 後ろに進む
-                //     sleep(0.5_s);
+                //     sleep(0.1_s);
+                //     // motor.right(1.0);  // 右に進む
+                //     // sleep(1.0_s);
+                //     // motor.left(1.0);  // 後ろに進む
+                //     // sleep(1.0_s);
                 // }
                 // catch(const std::exception& e){printf(e.what());}
+            
             }
             catch(const std::exception& e)
             {
@@ -261,6 +284,5 @@ int main()
     stdio_init_all();
     sleep_ms(1000);
     printf("init_ok\n");
-    while(true)
-        sc::main();
+    sc::main();
 }

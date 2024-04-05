@@ -44,7 +44,7 @@ void Spresense::read()
             }
         } else if (head == ":Cam")
         {
-            if (Cam(int(number)) == Cam::Left || Cam(int(number)) == Cam::Center || Cam(int(number)) == Cam::Right)
+            if (Cam(int(number)) == Cam::Left || Cam(int(number)) == Cam::Center || Cam(int(number)) == Cam::Right || Cam(int(number)) == Cam::NotFound || Cam(int(number)) == Cam::Reset)
             {
                 _cam = Cam(int(number));
                 _cam_update = get_absolute_time();
@@ -53,7 +53,7 @@ void Spresense::read()
         {
             std::tm new_time;
             auto num_itr = _read_binary.begin()+start_index+4;
-            if ((end_index-start_index) == 18)
+            if ((end_index-start_index) == 19)
             {
                 new_time.tm_year = stoi(std::string(num_itr, num_itr+4)) - 1900;  // 1900からの経過年数
                 new_time.tm_mon = stoi(std::string(num_itr+4, num_itr+6)) - 1;  // 0 = 1月
@@ -61,7 +61,7 @@ void Spresense::read()
                 new_time.tm_hour = stoi(std::string(num_itr+8, num_itr+10));  // 時
                 new_time.tm_min = stoi(std::string(num_itr+10, num_itr+12));  // 分
                 new_time.tm_sec = stoi(std::string(num_itr+12, num_itr+14));  // 秒
-                if (2020 < new_time.tm_year && new_time.tm_year < 2050)
+                if (2020 < (new_time.tm_year+1900) && (new_time.tm_year+1900) < 2050)
                 {
                     _time = new_time;
                     _time_update = get_absolute_time();
@@ -93,7 +93,7 @@ std::tuple<Latitude<Unit::deg>, Longitude<Unit::deg> > Spresense::gps()
     {
 throw std::runtime_error(f_err(__FILE__, __LINE__, "Latest GPS data not available"));  // 最新のGPSのデータがありません
     }
-    print("gps_read_data:%f,%f\n", _lat, _lon);
+    print("gps_read_data:%.7f,%.7f\n", _lat, _lon);
     return std::tuple(Latitude<Unit::deg>(_lat), Longitude<Unit::deg>(_lon));
 }
 
@@ -106,13 +106,21 @@ Cam Spresense::camera()
     _uart.write("CameraStart\n");
     if (absolute_time_diff_us(_cam_update, _start_time) == 0)
         read();
-    if (absolute_time_diff_us(_cam_update, get_absolute_time()) > 5*1000*1000)
+    if (absolute_time_diff_us(_cam_update, get_absolute_time()) > 1.5*1000*1000)
         read();
-    if (absolute_time_diff_us(_cam_update, get_absolute_time()) > 5*1000*1000 || absolute_time_diff_us(_cam_update, _start_time) == 0)
+    if (absolute_time_diff_us(_cam_update, get_absolute_time()) > 1.5*1000*1000 || absolute_time_diff_us(_cam_update, _start_time) == 0)
     {
 throw std::runtime_error(f_err(__FILE__, __LINE__, "Latest camera data not available"));  // 最新のカメラのデータがありません
     }
-    print("camera_read_data:%d\n", int(_cam));
+    // print("camera_read_data:%d\n", int(_cam));
+    switch (_cam)
+    {
+        case Cam::Left : {print("camera:left\n"); break;}
+        case Cam::Center : {print("camera:center\n"); break;}
+        case Cam::Right : {print("camera:right\n"); break;}
+        case Cam::NotFound : {print("camera:not_found\n"); break;}
+        case Cam::Reset : {print("camera:reset\n"); break;}
+    }
     return _cam;
 }
 
